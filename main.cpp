@@ -4,964 +4,1693 @@
 
 const float PI = 3.14159265f;
 
-
-// Circle ba surjo draw korar jonno expert function
-void drawCircle(float radius, float r, float g, float b) {
+// ==========================================
+// UTILITY FUNCTIONS
+// ==========================================
+void drawCircle(float radius, float r, float g, float b)
+{
     glColor3f(r, g, b);
     glBegin(GL_POLYGON);
-    for (int i = 0; i < 360; i += 10) {
+    for (int i = 0; i < 360; i += 10)
+    {
         float theta = i * PI / 180.0f;
         glVertex2f(radius * cos(theta), radius * sin(theta));
     }
     glEnd();
 }
 
-void drawCar() {
-    // Car Body (Chassis)
-    glColor3f(0.8f, 0.1f, 0.1f); // Red Car
+void drawCircleAlpha(float radius, float r, float g, float b, float a)
+{
+    glColor4f(r, g, b, a);
+    glBegin(GL_POLYGON);
+    for (int i = 0; i < 360; i += 10)
+    {
+        float theta = i * PI / 180.0f;
+        glVertex2f(radius * cos(theta), radius * sin(theta));
+    }
+    glEnd();
+}
+
+void drawCar()
+{
+    glColor3f(0.8f, 0.1f, 0.1f);
     glBegin(GL_QUADS);
-        glVertex2f(-0.1f, 0.0f); glVertex2f(0.1f, 0.0f);
-        glVertex2f(0.1f, 0.05f); glVertex2f(-0.1f, 0.05f);
+    glVertex2f(-0.1f, 0.0f);
+    glVertex2f(0.1f, 0.0f);
+    glVertex2f(0.1f, 0.05f);
+    glVertex2f(-0.1f, 0.05f);
+    glEnd();
+    glColor3f(0.6f, 0.0f, 0.0f);
+    glBegin(GL_QUADS);
+    glVertex2f(-0.05f, 0.05f);
+    glVertex2f(0.05f, 0.05f);
+    glVertex2f(0.03f, 0.08f);
+    glVertex2f(-0.03f, 0.08f);
+    glEnd();
+    glPushMatrix();
+    glTranslatef(-0.06f, 0.0f, 0.0f);
+    drawCircle(0.02f, 0.1f, 0.1f, 0.1f);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(0.06f, 0.0f, 0.0f);
+    drawCircle(0.02f, 0.1f, 0.1f, 0.1f);
+    glPopMatrix();
+}
+
+void drawTree(float swayAngle)
+{
+    glPushMatrix();
+    glRotatef(swayAngle, 0.0f, 0.0f, 1.0f);
+
+    // Trunk - brown wood
+    glColor3f(0.4f, 0.2f, 0.05f);
+    glBegin(GL_QUADS);
+    glVertex2f(-0.035f, 0.0f);
+    glVertex2f(0.035f, 0.0f);
+    glVertex2f(0.035f, 0.25f);
+    glVertex2f(-0.035f, 0.25f);
     glEnd();
 
-    // Car Top (Cabin)
-    glColor3f(0.6f, 0.0f, 0.0f); // Darker Red
-    glBegin(GL_QUADS);
-        glVertex2f(-0.05f, 0.05f); glVertex2f(0.05f, 0.05f);
-        glVertex2f(0.03f, 0.08f);  glVertex2f(-0.03f, 0.08f);
-    glEnd();
+    // Foliage - traditional cone/triangle shape
+    glPushMatrix();
+    glTranslatef(0.0f, 0.18f, 0.0f);
 
-    // Wheels
-    glPushMatrix(); glTranslatef(-0.06f, 0.0f, 0.0f); drawCircle(0.02f, 0.1f, 0.1f, 0.1f); glPopMatrix();
-    glPushMatrix(); glTranslatef(0.06f, 0.0f, 0.0f); drawCircle(0.02f, 0.1f, 0.1f, 0.1f); glPopMatrix();
-
-    // Headlight Beam (Semi-transparent yellow)
-    // NB: Enable GL_BLEND in init() for transparency to work properly
-    glColor4f(1.0f, 1.0f, 0.0f, 0.4f); // Yellow with 40% opacity
+    // Bottom layer - widest part
+    glColor3f(0.1f, 0.45f, 0.1f);
     glBegin(GL_TRIANGLES);
-        glVertex2f(0.1f, 0.025f);  // Headlight source
-        glVertex2f(0.5f, -0.05f);  // Beam bottom right
-        glVertex2f(0.5f, 0.1f);    // Beam top right
+    glVertex2f(-0.25f, -0.05f);
+    glVertex2f(0.25f, -0.05f);
+    glVertex2f(0.0f, 0.25f);
     glEnd();
-}
 
-// 3ti circle overlap kore ekta megh toiri hobe
-void drawCloud() {
-    glColor3f(1.0f, 1.0f, 1.0f); // Pure White
+    // Middle layer - lighter green with offset
+    glColor3f(0.15f, 0.55f, 0.12f);
     glPushMatrix();
-        glTranslatef(0.0f, 0.0f, 0.0f); drawCircle(0.1f, 1.0f, 1.0f, 1.0f); // Center
-        glTranslatef(-0.08f, -0.02f, 0.0f); drawCircle(0.08f, 1.0f, 1.0f, 1.0f); // Left
-        glTranslatef(0.16f, 0.0f, 0.0f); drawCircle(0.07f, 1.0f, 1.0f, 1.0f); // Right
+    glTranslatef(0.0f, 0.08f, 0.0f);
+    glBegin(GL_TRIANGLES);
+    glVertex2f(-0.18f, 0.0f);
+    glVertex2f(0.18f, 0.0f);
+    glVertex2f(0.0f, 0.22f);
+    glEnd();
+    glPopMatrix();
+
+    // Top layer - even brighter green
+    glColor3f(0.2f, 0.65f, 0.15f);
+    glPushMatrix();
+    glTranslatef(0.0f, 0.14f, 0.0f);
+    glBegin(GL_TRIANGLES);
+    glVertex2f(-0.12f, 0.0f);
+    glVertex2f(0.12f, 0.0f);
+    glVertex2f(0.0f, 0.18f);
+    glEnd();
+    glPopMatrix();
+
+    // Highlight - brightest part at top
+    glColor3f(0.25f, 0.75f, 0.2f);
+    glPushMatrix();
+    glTranslatef(0.0f, 0.28f, 0.0f);
+    drawCircle(0.08f, 0.25f, 0.75f, 0.2f);
+    glPopMatrix();
+
+    glPopMatrix();
     glPopMatrix();
 }
 
-// Chotto ekta gach draw korar reusable block
-void drawTree(float swayAngle) {
-    glPushMatrix();
-        // Ekhane amra gach-ke tar base (0,0) theke rotate korchi
-        glRotatef(swayAngle, 0.0f, 0.0f, 1.0f);
-
-        // Tree Trunk (Kando)
-        glColor3f(0.4f, 0.2f, 0.0f);
-        glBegin(GL_QUADS);
-            glVertex2f(-0.05f, 0.0f); glVertex2f(0.05f, 0.0f);
-            glVertex2f(0.05f, 0.3f);  glVertex2f(-0.05f, 0.3f);
-        glEnd();
-
-        // Tree Leaves (Pata)
-        glPushMatrix();
-            glTranslatef(0.0f, 0.35f, 0.0f);
-            drawCircle(0.15f, 0.1f, 0.5f, 0.1f); // Main leaf bunch
-
-            // Adding more details to leaves (Realism)
-            glTranslatef(-0.08f, -0.05f, 0.0f);
-            drawCircle(0.1f, 0.1f, 0.6f, 0.15f); // Left bump
-            glTranslatef(0.16f, 0.0f, 0.0f);
-            drawCircle(0.1f, 0.1f, 0.4f, 0.05f); // Right bump
-        glPopMatrix();
-    glPopMatrix();
-}
-
-// ==========================================
-// GLOBAL VARIABLES & SYSTEM STATES
-// ==========================================
-enum SceneState {
-    VILLAGE,
-    TRANSITION_TO_CITY,
-    CITY,
-    TRANSITION_TO_FUTURE,
-    FUTURE,
-    TRANSITION_TO_VILLAGE // Loop back
-};
-
-SceneState currentState = VILLAGE;
-
-// Extra Micro-Details Variables
-// City Details Variables
-// Traffic & Street Lights Variables
-// 🤖 Future Transformer Variables
-// 💎 AI Nexus Variables
-float nexusAngle = 0.0f;
-float nexusHover = 0.0f;
-float holoAngle = 0.0f; // হোলোগ্রাম ঘোরানোর জন্য
-float transX = -1.2f;           // ট্রান্সফর্মারের স্ক্রিন পজিশন
-float transProgress = 0.0f;     // 0.0 মানে গাড়ি, 1.0 মানে পুরোপুরি রোবট
-int transState = 0;             // 0=Driving, 1=Morphing, 2=Robot Action, 3=Morph Back, 4=Drive Away
-float laserTimer = 0.0f;        // লেজার মারার টাইমার
-float trafficTimer = 0.0f;
-int trafficState = 0; // 0 = Green, 1 = Yellow, 2 = Red
-float skylineOffset = 0.0f; // পেছনের শহরের ছায়া মুভ করার জন্য
-float cityCarX = -1.2f;     // শহরের গাড়ির পজিশন
-float fadeAlpha = 0.0f; // স্মুথ ট্রানজিশনের পর্দার জন্য
-float windmillAngle = 0.0f;  // হাওয়াকলের চাকা ঘোরানোর জন্য
-float boatX = 1.2f;          // নৌকা ডানদিক থেকে বামদিকে আসার জন্য
-float smokeProgress = 0.0f;  // ধোঁয়া উপরে উঠে মিলিয়ে যাওয়ার জন্য
-float windTime = 0.0f;
-float windStreakX = -1.5f;
-float birdX = -1.0f;
-float rippleOffset = 0.0f; // River animation-er jonno
-float timer = 0.0f;
-float transitionProgress = 0.0f;
-float cloudX = -1.2f;
-float carX = -1.2f;
-float pulseTime = 0.0f;
-float hoverY = 0.0f;
-
-// Background Colors (R, G, B)
-float bgR = 0.5f, bgG = 0.8f, bgB = 1.0f; // Default Sky Blue
-
-// ==========================================
-// UTILITY FUNCTIONS
-// ==========================================
-// Linear Interpolation for smooth transitions
-float lerp(float start, float end, float t) {
-    if (t > 1.0f) t = 1.0f;
+float lerp(float start, float end, float t)
+{
+    if (t > 1.0f)
+        t = 1.0f;
     return start + t * (end - start);
 }
 
 // ==========================================
-// DRAWING MODULES
+// GRAPHICS ALGORITHMS IMPLEMENTATION
 // ==========================================
-void drawFence(float x, float y) {
-    glColor3f(0.5f, 0.3f, 0.1f); // Wood color
-    glPushMatrix();
-        glTranslatef(x, y, 0.0f);
-        for(float i = 0; i < 0.3f; i += 0.08f) {
-            glBegin(GL_QUADS); // Vertical posts
-                glVertex2f(i, 0.0f); glVertex2f(i+0.02f, 0.0f);
-                glVertex2f(i+0.02f, 0.15f); glVertex2f(i, 0.15f);
-            glEnd();
+
+// ⚪ MIDPOINT CIRCLE ALGORITHM (Bresenham)
+void drawCircleBresenham(float centerX, float centerY, float radius, float r, float g, float b)
+{
+    glColor3f(r, g, b);
+    glPointSize(2.0f);
+    glBegin(GL_POINTS);
+
+    int x = 0;
+    int y = (int)radius;
+    int d = 3 - 2 * (int)radius; // Decision parameter
+
+    while (x <= y)
+    {
+        // Plot 8 symmetrical points (octant symmetry)
+        glVertex2f(centerX + x, centerY + y);
+        glVertex2f(centerX - x, centerY + y);
+        glVertex2f(centerX + x, centerY - y);
+        glVertex2f(centerX - x, centerY - y);
+        glVertex2f(centerX + y, centerY + x);
+        glVertex2f(centerX - y, centerY + x);
+        glVertex2f(centerX + y, centerY - x);
+        glVertex2f(centerX - y, centerY - x);
+
+        // Update decision parameter and coordinates
+        if (d < 0)
+        {
+            d = d + 4 * x + 6;
         }
-        glBegin(GL_QUADS); // Horizontal rail
-            glVertex2f(-0.02f, 0.08f); glVertex2f(0.3f, 0.08f);
-            glVertex2f(0.3f, 0.1f); glVertex2f(-0.02f, 0.1f);
-        glEnd();
+        else
+        {
+            d = d + 4 * (x - y) + 10;
+            y--;
+        }
+        x++;
+    }
+    glEnd();
+    glPointSize(1.0f);
+}
+
+// ─ DDA LINE ALGORITHM (Digital Differential Analyzer)
+void drawLineDDA(float x1, float y1, float x2, float y2, float r, float g, float b, float width)
+{
+    glColor3f(r, g, b);
+    glLineWidth(width);
+
+    float dx = x2 - x1;
+    float dy = y2 - y1;
+
+    // Calculate number of steps (use max of |dx| and |dy|)
+    float steps = (fabs(dx) > fabs(dy)) ? fabs(dx) : fabs(dy);
+
+    if (steps == 0.0f)
+        steps = 1.0f; // Prevent division by zero
+
+    // Calculate increment for each step
+    float xInc = dx / steps;
+    float yInc = dy / steps;
+
+    float x = x1;
+    float y = y1;
+
+    glBegin(GL_POINTS);
+    for (int i = 0; i <= (int)steps; i++)
+    {
+        glVertex2f(x, y);
+        x += xInc;
+        y += yInc;
+    }
+    glEnd();
+    glLineWidth(1.0f);
+}
+
+// 🔀 SHEAR TRANSFORMATION MATRIX (2D Shear transformation)
+void applyShearTransform(float shearX, float shearY)
+{
+    // Shear matrix for 2D transformation
+    // | 1   shearX  0 |
+    // | shearY  1   0 |
+    // | 0   0    1 |
+    GLfloat shearMatrix[16] = {
+        1.0f, shearY, 0.0f, 0.0f,
+        shearX, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f};
+    glMultMatrixf(shearMatrix);
+}
+
+// Demo function: Show all 5 transformations together
+void drawTransformationDemo()
+{
+    glPushMatrix();
+    glTranslatef(-0.85f, 0.85f, 0.0f); // Translation: Move to top-left
+
+    // 1. TRANSLATION (already applied above)
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glBegin(GL_QUADS);
+    glVertex2f(-0.02f, -0.02f);
+    glVertex2f(0.02f, -0.02f);
+    glVertex2f(0.02f, 0.02f);
+    glVertex2f(-0.02f, 0.02f);
+    glEnd();
+
+    // 2. ROTATION (30 degrees)
+    glPushMatrix();
+    glRotatef(30.0f, 0.0f, 0.0f, 1.0f);
+    glColor3f(0.0f, 1.0f, 0.0f);
+    glBegin(GL_TRIANGLES);
+    glVertex2f(0.0f, 0.05f);
+    glVertex2f(-0.03f, -0.05f);
+    glVertex2f(0.03f, -0.05f);
+    glEnd();
+    glPopMatrix();
+
+    // 3. SCALING (1.5x scale)
+    glPushMatrix();
+    glTranslatef(0.12f, 0.0f, 0.0f);
+    glScalef(1.5f, 1.5f, 1.0f);
+    glColor3f(0.0f, 0.0f, 1.0f);
+    glBegin(GL_QUADS);
+    glVertex2f(-0.015f, -0.015f);
+    glVertex2f(0.015f, -0.015f);
+    glVertex2f(0.015f, 0.015f);
+    glVertex2f(-0.015f, 0.015f);
+    glEnd();
+    glPopMatrix();
+
+    // 4. REFLECTION (horizontal flip: scale -1 on X)
+    glPushMatrix();
+    glTranslatef(0.24f, 0.0f, 0.0f);
+    glScalef(-1.5f, 1.0f, 1.0f); // Reflection + scaling
+    glColor3f(1.0f, 1.0f, 0.0f);
+    glBegin(GL_TRIANGLES);
+    glVertex2f(0.0f, 0.05f);
+    glVertex2f(-0.03f, -0.05f);
+    glVertex2f(0.03f, -0.05f);
+    glEnd();
+    glPopMatrix();
+
+    // 5. SHEAR TRANSFORMATION
+    glPushMatrix();
+    glTranslatef(0.36f, 0.0f, 0.0f);
+    applyShearTransform(0.3f, 0.0f); // Shear X by 0.3
+    glColor3f(1.0f, 0.0f, 1.0f);
+    glBegin(GL_QUADS);
+    glVertex2f(-0.02f, -0.04f);
+    glVertex2f(0.02f, -0.04f);
+    glVertex2f(0.02f, 0.04f);
+    glVertex2f(-0.02f, 0.04f);
+    glEnd();
+    glPopMatrix();
+
     glPopMatrix();
 }
 
-// --- পালতোলা নৌকা (Sailboat) ---
-void drawBoat() {
+// Demo function: Show Midpoint Circle and DDA Line Algorithms
+void drawAlgorithmDemo()
+{
     glPushMatrix();
-        glTranslatef(boatX, -0.65f, 0.0f); // নদীর ঠিক ওপরে
+    glTranslatef(-0.85f, 0.65f, 0.0f);
 
-        // নৌকার বডি (কাঠের রঙ)
-        glColor3f(0.5f, 0.25f, 0.1f);
-        glBegin(GL_POLYGON);
-            glVertex2f(-0.15f, 0.0f);  glVertex2f(0.15f, 0.0f);
-            glVertex2f(0.1f, -0.08f);  glVertex2f(-0.1f, -0.08f);
+    // Title area for algorithms
+    glColor3f(0.8f, 0.8f, 0.8f);
+    glPointSize(1.0f);
+    glBegin(GL_LINES);
+    glVertex2f(0.0f, 0.0f);
+    glVertex2f(0.5f, 0.0f);
+    glEnd();
+
+    // Midpoint Circle Algorithm Demo
+    glPushMatrix();
+    glTranslatef(0.08f, 0.0f, 0.0f);
+    drawCircleBresenham(0.0f, 0.0f, 0.06f, 0.0f, 1.0f, 0.5f);
+    glPopMatrix();
+
+    // DDA Line Algorithm Demo
+    glPushMatrix();
+    glTranslatef(0.25f, -0.02f, 0.0f);
+    drawLineDDA(0.0f, 0.0f, 0.08f, 0.08f, 1.0f, 0.5f, 0.0f, 2.0f);
+    glPopMatrix();
+
+    glPopMatrix();
+}
+
+// ==========================================
+// FORWARD DECLARATIONS (Fixes Scope Errors)
+// ==========================================
+void drawVillage();
+void drawCity();
+void drawFuture();
+void drawTransformationDemo();
+void drawAlgorithmDemo();
+
+// ==========================================
+// GLOBAL VARIABLES & SYSTEM STATES
+// ==========================================
+enum SceneState
+{
+    VILLAGE,
+    TRANSITION_TO_CITY,
+    CITY,
+    TRANSITION_TO_FUTURE,
+    FUTURE
+};
+
+SceneState currentState = VILLAGE;
+
+float cloudX = -1.2f;
+float carX = -1.2f;
+float holoAngle = 0.0f;
+float trafficTimer = 0.0f;
+int trafficState = 0;
+float skylineOffset = 0.0f;
+float cityCarX = -1.2f;
+float fadeAlpha = 0.0f;
+float windmillAngle = 0.0f;
+float boatX = 1.2f;
+float smokeProgress = 0.0f;
+float windTime = 0.0f;
+float windStreakX = -1.5f;
+float birdX = -1.0f;
+float rippleOffset = 0.0f;
+float timer = 0.0f;
+float transitionProgress = 0.0f;
+float pulseTime = 0.0f;
+float hoverY = 0.0f;
+
+// Sci-Fi Future Space City Variables
+float metro2070X = -3.0f;
+float spaceCar1X = 1.5f;
+float spaceCar2X = -1.5f;
+
+float bgR = 0.5f, bgG = 0.8f, bgB = 1.0f;
+
+// Village enhanced animation vars
+float birdX2  =  0.30f;
+float cloudX2 =  0.50f;
+float cloudX3 = -0.40f;
+
+// ==========================================
+// DRAWING MODULES (VILLAGE)
+// ==========================================
+void drawFence(float x, float y)
+{
+    glColor3f(0.5f, 0.3f, 0.1f);
+    glPushMatrix();
+    glTranslatef(x, y, 0.0f);
+    for (float i = 0; i < 0.3f; i += 0.08f)
+    {
+        glBegin(GL_QUADS);
+        glVertex2f(i, 0.0f);
+        glVertex2f(i + 0.02f, 0.0f);
+        glVertex2f(i + 0.02f, 0.15f);
+        glVertex2f(i, 0.15f);
         glEnd();
+    }
+    glBegin(GL_QUADS);
+    glVertex2f(-0.02f, 0.08f);
+    glVertex2f(0.3f, 0.08f);
+    glVertex2f(0.3f, 0.1f);
+    glVertex2f(-0.02f, 0.1f);
+    glEnd();
+    glPopMatrix();
+}
 
-        // নৌকার মাস্তুল (Mast - Pole)
-        glColor3f(0.1f, 0.1f, 0.1f);
-        glBegin(GL_LINES);
-            glVertex2f(0.0f, 0.0f); glVertex2f(0.0f, 0.25f);
-        glEnd();
+void drawBoat()
+{
+    glPushMatrix();
+    glTranslatef(boatX, -0.65f, 0.0f);
+    glColor3f(0.5f, 0.25f, 0.1f);
+    glBegin(GL_POLYGON);
+    glVertex2f(-0.15f, 0.0f);
+    glVertex2f(0.15f, 0.0f);
+    glVertex2f(0.1f, -0.08f);
+    glVertex2f(-0.1f, -0.08f);
+    glEnd();
+    glColor3f(0.1f, 0.1f, 0.1f);
+    glBegin(GL_LINES);
+    glVertex2f(0.0f, 0.0f);
+    glVertex2f(0.0f, 0.25f);
+    glEnd();
+    glColor3f(0.9f, 0.9f, 0.9f);
+    glBegin(GL_TRIANGLES);
+    glVertex2f(0.0f, 0.05f);
+    glVertex2f(0.0f, 0.25f);
+    glVertex2f(0.15f, 0.1f);
+    glEnd();
+    glPopMatrix();
+}
 
-        // নৌকার পাল (Sail - সাদা কাপড়)
-        glColor3f(0.9f, 0.9f, 0.9f);
+void drawWindmill()
+{
+    glPushMatrix();
+    glTranslatef(-0.8f, 0.1f, 0.0f);
+    glScalef(0.8f, 0.8f, 1.0f);
+    glColor3f(0.6f, 0.5f, 0.4f);
+    glBegin(GL_POLYGON);
+    glVertex2f(-0.08f, -0.4f);
+    glVertex2f(0.08f, -0.4f);
+    glVertex2f(0.04f, 0.2f);
+    glVertex2f(-0.04f, 0.2f);
+    glEnd();
+    glPushMatrix();
+    glTranslatef(0.0f, 0.2f, 0.0f);
+    glRotatef(windmillAngle, 0.0f, 0.0f, 1.0f);
+    glColor3f(0.8f, 0.8f, 0.8f);
+    for (int i = 0; i < 4; i++)
+    {
+        glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
         glBegin(GL_TRIANGLES);
-            glVertex2f(0.0f, 0.05f);  // Bottom
-            glVertex2f(0.0f, 0.25f);  // Top
-            // হাওয়া যেদিকে বইছে, পাল সেদিকে একটু ফুলে থাকবে
-            glVertex2f(0.15f, 0.1f);
+        glVertex2f(-0.02f, 0.0f);
+        glVertex2f(0.02f, 0.0f);
+        glVertex2f(0.0f, 0.3f);
         glEnd();
+    }
+    glPopMatrix();
     glPopMatrix();
 }
 
-// --- হাওয়াকল (Windmill) ---
-void drawWindmill() {
-    glPushMatrix();
-        glTranslatef(-0.8f, 0.1f, 0.0f); // পাহাড়ের কাছে ব্যাকগ্রাউন্ডে
-        glScalef(0.8f, 0.8f, 1.0f); // একটু ছোট করে দিলাম
-
-        // Tower (টাওয়ার)
-        glColor3f(0.6f, 0.5f, 0.4f);
-        glBegin(GL_POLYGON);
-            glVertex2f(-0.08f, -0.3f); glVertex2f(0.08f, -0.3f);
-            glVertex2f(0.04f, 0.2f);   glVertex2f(-0.04f, 0.2f);
-        glEnd();
-
-        // Rotating Blades (ঘূর্ণায়মান পাখা)
-        glPushMatrix();
-            glTranslatef(0.0f, 0.2f, 0.0f); // পাখার সেন্টার
-            glRotatef(windmillAngle, 0.0f, 0.0f, 1.0f); // চাকা ঘুরবে!
-
-            glColor3f(0.8f, 0.8f, 0.8f); // পাখার রঙ
-            for(int i = 0; i < 4; i++) {
-                glRotatef(90.0f, 0.0f, 0.0f, 1.0f); // ৯০ ডিগ্রি পর পর ৪টি পাখা
-                glBegin(GL_TRIANGLES);
-                    glVertex2f(-0.02f, 0.0f); glVertex2f(0.02f, 0.0f);
-                    glVertex2f(0.0f, 0.3f);
-                glEnd();
-            }
-        glPopMatrix();
-    glPopMatrix();
-}
-
-// --- চিমনির ধোঁয়া (Animated Smoke) ---
-void drawSmoke() {
-    // ধোঁয়া ধীরে ধীরে উপরে উঠবে এবং বড় হবে
+void drawSmoke()
+{
     float yOffset = smokeProgress * 0.3f;
     float size = 0.03f + (smokeProgress * 0.05f);
-
-    // ধোঁয়া যত উপরে উঠবে, তত মিলিয়ে যাবে (Alpha transparency 1.0 থেকে 0.0 হবে)
     float alpha = 1.0f - smokeProgress;
-    if (alpha < 0.0f) alpha = 0.0f;
-
+    if (alpha < 0.0f)
+        alpha = 0.0f;
     glPushMatrix();
-        // কুঁড়েঘরের চিমনির ঠিক ওপরে পজিশন
-        glTranslatef(-0.35f, 0.1f + yOffset, 0.0f);
-        // হাওয়া ধোঁয়াকে ডানদিকে ঠেলে দিচ্ছে
-        glTranslatef(smokeProgress * 0.15f, 0.0f, 0.0f);
-
-        // GL_BLEND অন করা থাকতে হবে
-        glColor4f(0.6f, 0.6f, 0.6f, alpha);
-        drawCircle(size, 0.6f, 0.6f, 0.6f); // drawCircle ফাংশনটি আগে থেকেই তোমার কোডে আছে
+    glTranslatef(-0.35f, 0.1f + yOffset, 0.0f);
+    glTranslatef(smokeProgress * 0.15f, 0.0f, 0.0f);
+    drawCircleAlpha(size, 0.6f, 0.6f, 0.6f, alpha);
     glPopMatrix();
 }
 
-void drawWindStreaks() {
-    // Enable blending is required for this transparency
-    glColor4f(1.0f, 1.0f, 1.0f, 0.4f); // 40% opaque white
+void drawWindStreaks()
+{
+    glColor4f(1.0f, 1.0f, 1.0f, 0.4f);
     glLineWidth(2.0f);
-
     glPushMatrix();
-        glTranslatef(windStreakX, 0.0f, 0.0f);
+    glTranslatef(windStreakX, 0.0f, 0.0f);
+    glBegin(GL_LINES);
+    glVertex2f(0.0f, 0.3f);
+    glVertex2f(0.4f, 0.3f);
+    glVertex2f(-0.2f, 0.15f);
+    glVertex2f(0.3f, 0.15f);
+    glVertex2f(0.1f, -0.1f);
+    glVertex2f(0.6f, -0.1f);
+    glEnd();
+    glPopMatrix();
+}
+
+void drawBirdFlock(float x, float y, float scale);
+
+void drawBirds()
+{
+    drawBirdFlock(birdX, 0.6f, 1.0f);
+}
+
+void drawSunRays()
+{
+    glPushMatrix();
+    glTranslatef(0.6f, 0.6f, 0.0f);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Draw radiating sun rays
+    glLineWidth(2.0f);
+    for (int i = 0; i < 12; i++)
+    {
+        float angle = (i / 12.0f) * 2.0f * PI;
+        float rayStart = 0.16f;
+        float rayEnd = 0.38f;
+
+        float x1 = sin(angle) * rayStart;
+        float y1 = cos(angle) * rayStart;
+        float x2 = sin(angle) * rayEnd;
+        float y2 = cos(angle) * rayEnd;
+
+        glColor4f(1.0f, 0.85f, 0.1f, 0.6f);
+        glBegin(GL_LINES);
+        glVertex2f(x1, y1);
+        glVertex2f(x2, y2);
+        glEnd();
+    }
+
+    // Outer glow for sun rays
+    glLineWidth(3.0f);
+    glColor4f(1.0f, 0.85f, 0.1f, 0.2f);
+    for (int i = 0; i < 12; i++)
+    {
+        float angle = (i / 12.0f) * 2.0f * PI;
+        float rayStart = 0.16f;
+        float rayEnd = 0.38f;
+
+        float x1 = sin(angle) * rayStart;
+        float y1 = cos(angle) * rayStart;
+        float x2 = sin(angle) * rayEnd;
+        float y2 = cos(angle) * rayEnd;
 
         glBegin(GL_LINES);
-            // Streak 1 (Top)
-            glVertex2f(0.0f, 0.3f); glVertex2f(0.4f, 0.3f);
-            // Streak 2 (Middle, slightly offset)
-            glVertex2f(-0.2f, 0.15f); glVertex2f(0.3f, 0.15f);
-            // Streak 3 (Bottom)
-            glVertex2f(0.1f, -0.1f); glVertex2f(0.6f, -0.1f);
+        glVertex2f(x1, y1);
+        glVertex2f(x2, y2);
         glEnd();
+    }
+
+    glDisable(GL_BLEND);
     glPopMatrix();
 }
 
-void drawBirds() {
-    glColor3f(0.1f, 0.1f, 0.1f); // Dark silhouette
-    glLineWidth(2.0f);
+// ==========================================
+// DRAWING MODULES (VILLAGE - ENHANCED)
+// ==========================================
 
-    glPushMatrix();
-        glTranslatef(birdX, 0.6f, 0.0f);
-
-        // Bird 1 (Classic 'V' shape)
-        glBegin(GL_LINE_STRIP);
-            glVertex2f(-0.04f, 0.04f); glVertex2f(0.0f, 0.0f); glVertex2f(0.04f, 0.04f);
-        glEnd();
-
-        // Bird 2 (Smaller, trailing behind)
-        glPushMatrix();
-            glTranslatef(0.08f, 0.03f, 0.0f);
-            glScalef(0.7f, 0.7f, 1.0f);
-            glBegin(GL_LINE_STRIP);
-                glVertex2f(-0.04f, 0.04f); glVertex2f(0.0f, 0.0f); glVertex2f(0.04f, 0.04f);
-            glEnd();
-        glPopMatrix();
-
-    glPopMatrix();
+void drawSkyGradient()
+{
+    // Warm sky gradient: deeper blue at top, soft peachy horizon
+    glBegin(GL_QUADS);
+    glColor3f(0.32f, 0.58f, 0.92f);  // deep azure top
+    glVertex2f(-1.0f, 1.0f);
+    glVertex2f( 1.0f, 1.0f);
+    glColor3f(0.60f, 0.82f, 1.0f);   // pale sky at horizon
+    glVertex2f( 1.0f, -0.10f);
+    glVertex2f(-1.0f, -0.10f);
+    glEnd();
 }
 
-// --- শহরের পেছনের ছায়া (Parallax Skyline) ---
-void drawSkyline() {
-    glColor3f(0.1f, 0.1f, 0.15f); // খুব গাঢ় নীল/কালো (দূরের ছায়া)
-    glPushMatrix();
-        glTranslatef(skylineOffset, 0.0f, 0.0f); // প্যারালাক্স মুভমেন্ট
-
-        // লুপ চালিয়ে অনেকগুলো পেছনের বিল্ডিং ড্র করা
-        for(float x = -2.0f; x < 2.0f; x += 0.25f) {
-            // sin() ব্যবহার করে রেন্ডম হাইট তৈরি করা
-            float h = 0.4f + (sin(x * 15.0f) * 0.3f);
-            glBegin(GL_QUADS);
-                glVertex2f(x, -0.3f);        glVertex2f(x + 0.2f, -0.3f);
-                glVertex2f(x + 0.2f, h);     glVertex2f(x, h);
-            glEnd();
-        }
-    glPopMatrix();
-}
-
-// --- সলিড থ্রিডি বিল্ডিং (Reusable 3D Building Generator) ---
-// x = পজিশন, height = উচ্চতা, r,g,b = বিল্ডিংয়ের রঙ
-void draw3DBuilding(float x, float height, float r, float g, float b) {
-    glPushMatrix();
-        glTranslatef(x, -0.4f, 0.0f); // মাটি থেকে শুরু
-
-        // 1. সামনের দেয়াল (Front Wall)
-        glColor3f(r, g, b);
-        glBegin(GL_QUADS);
-            glVertex2f(0.0f, 0.0f);    glVertex2f(0.2f, 0.0f);
-            glVertex2f(0.2f, height);  glVertex2f(0.0f, height);
-        glEnd();
-
-        // 2. পাশের দেয়াল (Side Wall - ছায়ার জন্য একটু ডার্ক রঙ)
-        glColor3f(r * 0.6f, g * 0.6f, b * 0.6f);
-        glBegin(GL_QUADS);
-            glVertex2f(0.2f, 0.0f);           glVertex2f(0.3f, 0.08f);
-            glVertex2f(0.3f, height + 0.08f); glVertex2f(0.2f, height);
-        glEnd();
-
-        // 3. ছাদ (Roof - সবচেয়ে উজ্জ্বল রঙ)
-        glColor3f(r * 0.8f, g * 0.8f, b * 0.8f);
-        glBegin(GL_QUADS);
-            glVertex2f(0.0f, height);         glVertex2f(0.2f, height);
-            glVertex2f(0.3f, height + 0.08f); glVertex2f(0.1f, height + 0.08f);
-        glEnd();
-
-        // 4. ডাইনামিক জানালা (Glowing Windows)
-        for(float wy = 0.1f; wy < height - 0.1f; wy += 0.15f) {
-            for(float wx = 0.04f; wx < 0.16f; wx += 0.08f) {
-                // ম্যাথ দিয়ে ডিসাইড হবে কোন আলো জ্বলবে আর কোনটা নিভবে
-                if ((int)(wx * 100 + wy * 100 + x * 10) % 3 != 0) {
-                    glColor3f(0.9f, 0.9f, 0.5f); // Light ON (হলুদ)
-                } else {
-                    glColor3f(0.15f, 0.15f, 0.2f); // Light OFF (অন্ধকার)
-                }
-                glBegin(GL_QUADS);
-                    glVertex2f(wx, wy);               glVertex2f(wx + 0.04f, wy);
-                    glVertex2f(wx + 0.04f, wy + 0.06f); glVertex2f(wx, wy + 0.06f);
-                glEnd();
-            }
-        }
-    glPopMatrix();
-}
-
-// --- 🚦 স্মার্ট ট্রাফিক সিগন্যাল (Traffic Light) ---
-void drawTrafficLight(float x, float y) {
-    glPushMatrix();
-        glTranslatef(x, y, 0.0f);
-
-        // সিগন্যালের খুঁটি (Pole)
-        glColor3f(0.2f, 0.2f, 0.2f);
-        glBegin(GL_QUADS);
-            glVertex2f(-0.015f, 0.0f); glVertex2f(0.015f, 0.0f);
-            glVertex2f(0.015f, 0.4f);  glVertex2f(-0.015f, 0.4f);
-        glEnd();
-
-        // সিগন্যাল বক্স (Black Box)
-        glColor3f(0.1f, 0.1f, 0.15f);
-        glBegin(GL_QUADS);
-            glVertex2f(-0.05f, 0.4f);  glVertex2f(0.05f, 0.4f);
-            glVertex2f(0.05f, 0.7f);   glVertex2f(-0.05f, 0.7f);
-        glEnd();
-
-        // লাল বাতি (Red)
-        glPushMatrix(); glTranslatef(0.0f, 0.62f, 0.0f);
-        if (trafficState == 2) drawCircle(0.035f, 1.0f, 0.1f, 0.1f); // On
-        else drawCircle(0.035f, 0.3f, 0.0f, 0.0f); // Off
-        glPopMatrix();
-
-        // হলুদ বাতি (Yellow)
-        glPushMatrix(); glTranslatef(0.0f, 0.52f, 0.0f);
-        if (trafficState == 1) drawCircle(0.035f, 1.0f, 1.0f, 0.0f); // On
-        else drawCircle(0.035f, 0.3f, 0.3f, 0.0f); // Off
-        glPopMatrix();
-
-        // সবুজ বাতি (Green)
-        glPushMatrix(); glTranslatef(0.0f, 0.42f, 0.0f);
-        if (trafficState == 0) drawCircle(0.035f, 0.0f, 1.0f, 0.0f); // On
-        else drawCircle(0.035f, 0.0f, 0.3f, 0.0f); // Off
-        glPopMatrix();
-    glPopMatrix();
-}
-
-// --- 💡 স্ট্রিট ল্যাম্প (আপগ্রেডেড - আলোর বিচ্ছুরণ সহ) ---
-void drawStreetLamp(float x) {
-    glPushMatrix();
-        glTranslatef(x, -0.4f, 0.0f); // ফুটপাতের ওপর
-
-        // খুঁটি (Pole)
-        glColor3f(0.1f, 0.1f, 0.1f);
-        glBegin(GL_QUADS);
-            glVertex2f(-0.015f, 0.0f); glVertex2f(0.015f, 0.0f);
-            glVertex2f(0.015f, 0.5f);  glVertex2f(-0.015f, 0.5f);
-        glEnd();
-
-        // বাতির শেড (Lamp Head)
-        glColor3f(0.2f, 0.2f, 0.2f);
-        glBegin(GL_TRIANGLES);
-            glVertex2f(-0.06f, 0.48f); glVertex2f(0.06f, 0.48f);
-            glVertex2f(0.0f, 0.53f);
-        glEnd();
-
-        // আলোর বাল্ব (Glowing Bulb)
-        glPushMatrix(); glTranslatef(0.0f, 0.47f, 0.0f); drawCircle(0.02f, 1.0f, 1.0f, 0.8f); glPopMatrix();
-
-        // 🌟 ম্যাজিক: আলোর বিচ্ছুরণ (Light Cone)
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glColor4f(1.0f, 1.0f, 0.6f, 0.25f); // 25% স্বচ্ছ হলুদ আলো
-        glBegin(GL_TRIANGLES);
-            glVertex2f(0.0f, 0.47f);   // টপ পয়েন্ট (বাল্বের কাছে)
-            glVertex2f(-0.25f, -0.2f); // রাস্তার বামে
-            glVertex2f(0.25f, -0.2f);  // রাস্তার ডানে
-        glEnd();
-        glDisable(GL_BLEND);
-    glPopMatrix();
-}
-
-// --- 🌌 দ্য কোয়ান্টাম নেক্সাস (Pro-Level Future Core) ---
-void drawMegaNexus() {
-    glPushMatrix();
-        glTranslatef(0.0f, 0.4f + (sin(pulseTime) * 0.05f), 0.0f); // স্মুথ ভাসমান মোশন
-
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        // 1. Vertical Energy Beam (আকাশে ওঠা শক্তির রশ্মি)
-        glBegin(GL_QUADS);
-            glColor4f(0.0f, 1.0f, 1.0f, 0.0f); glVertex2f(-0.08f, 1.0f); // Top Fade
-            glColor4f(0.0f, 1.0f, 1.0f, 0.0f); glVertex2f(0.08f, 1.0f);
-            glColor4f(0.0f, 1.0f, 1.0f, 0.6f); glVertex2f(0.05f, 0.0f);  // Bottom Bright
-            glColor4f(0.0f, 1.0f, 1.0f, 0.6f); glVertex2f(-0.05f, 0.0f);
-        glEnd();
-
-        // 2. Glowing Core (মাঝখানের জ্বলন্ত সূর্য)
-        glColor4f(0.0f, 1.0f, 1.0f, 0.8f); drawCircle(0.12f, 0.0f, 1.0f, 1.0f); // Solid Cyan
-        glColor4f(1.0f, 1.0f, 1.0f, 1.0f); drawCircle(0.06f, 1.0f, 1.0f, 1.0f); // Pure White Center
-
-        // 3. Fast Inner Hologram Ring (ভেতরের দ্রুত ঘূর্ণায়মান রিং)
-        glPushMatrix();
-            glRotatef(nexusAngle * 3.0f, 0.0f, 0.0f, 1.0f);
-            glColor4f(1.0f, 0.0f, 1.0f, 0.9f); // Neon Magenta
-            glLineWidth(3.0f);
-            glBegin(GL_LINE_LOOP);
-                glVertex2f(0.0f, 0.2f);  glVertex2f(0.18f, 0.08f);
-                glVertex2f(0.18f, -0.08f); glVertex2f(0.0f, -0.2f);
-                glVertex2f(-0.18f, -0.08f); glVertex2f(-0.18f, 0.08f);
-            glEnd();
-        glPopMatrix();
-
-        // 4. Slow Outer Cyber-Ring (বাইরের ধীরে ঘোরা জটিল রিং)
-        glPushMatrix();
-            glRotatef(-nexusAngle, 0.0f, 0.0f, 1.0f); // উল্টো ঘুরবে
-            glColor4f(0.0f, 0.8f, 1.0f, 0.5f);
-            glLineWidth(1.5f);
-            // একাধিক ত্রিভুজ দিয়ে থ্রিডি শেপ বোঝানো
-            for(int i = 0; i < 360; i += 45) {
-                glPushMatrix();
-                glRotatef(i, 0.0f, 0.0f, 1.0f);
-                glBegin(GL_LINE_LOOP);
-                    glVertex2f(0.0f, 0.3f); glVertex2f(0.05f, 0.25f); glVertex2f(-0.05f, 0.25f);
-                glEnd();
-                glPopMatrix();
-            }
-            drawCircle(0.3f, 0.0f, 1.0f, 1.0f); // Outer boundary
-        glPopMatrix();
-
-        glDisable(GL_BLEND);
-    glPopMatrix();
-}
-
-// --- 🤖 আপগ্রেডেড অ্যাডভান্সড ট্রান্সফর্মার ---
-void drawTransformer() {
-    glPushMatrix();
-        glTranslatef(transX, -0.4f, 0.0f);
-
-        float p = transProgress;
-
-        // ⚡ মর্ফিং এনার্জি শিল্ড (যখন ট্রান্সফর্ম হবে তখন নীল বিদ্যুৎ দেখা যাবে)
-        if (p > 0.1f && p < 0.9f) {
-            glEnable(GL_BLEND);
-            glColor4f(0.0f, 0.5f, 1.0f, 0.3f);
-            drawCircle(0.2f + (sin(pulseTime * 10.0f) * 0.02f), 0.0f, 0.5f, 1.0f);
-            glDisable(GL_BLEND);
-        }
-
-        // 1. মেকানিক্যাল পা / পেছনের চাকা (Detailed Legs)
-        glPushMatrix();
-            glTranslatef(lerp(-0.15f, -0.05f, p), lerp(0.0f, -0.15f, p), 0.0f);
-            glColor3f(0.2f, 0.2f, 0.2f); // মেটাল জয়েন্ট
-            if(p > 0.5f) {
-                glBegin(GL_QUADS); // পায়ের মেকানিকস
-                    glVertex2f(-0.04f, 0.0f); glVertex2f(0.04f, 0.0f);
-                    glVertex2f(0.06f, 0.1f);  glVertex2f(-0.06f, 0.1f);
-                glEnd();
-            }
-            drawCircle(0.04f, 0.0f, 0.8f, 1.0f); // গ্লোয়িং হুইল/পায়ের পাতা
-        glPopMatrix();
-
-        // দ্বিতীয় পা (আলাদা করে খুলবে)
-        glPushMatrix();
-            glTranslatef(lerp(-0.15f, 0.08f, p), lerp(0.0f, -0.15f, p), 0.0f);
-            if(p > 0.5f) {
-                glColor3f(0.15f, 0.15f, 0.15f);
-                glBegin(GL_QUADS);
-                    glVertex2f(-0.04f, 0.0f); glVertex2f(0.04f, 0.0f);
-                    glVertex2f(0.06f, 0.1f);  glVertex2f(-0.06f, 0.1f);
-                glEnd();
-            }
-            drawCircle(0.04f, 0.0f, 0.5f, 0.8f);
-        glPopMatrix();
-
-        // 2. মেইন বডি প্যানেল (Splitting Armor)
-        glPushMatrix();
-            glTranslatef(0.0f, lerp(0.0f, 0.05f, p), 0.0f);
-            glRotatef(lerp(0.0f, 90.0f, p), 0.0f, 0.0f, 1.0f);
-
-            // আউটার আর্মার (Outer Armor)
-            glColor3f(0.1f, 0.15f, 0.25f);
-            glBegin(GL_POLYGON);
-                glVertex2f(-0.2f, -0.05f); glVertex2f(0.2f, -0.05f);
-                glVertex2f(0.18f, 0.05f);  glVertex2f(-0.18f, 0.05f);
-            glEnd();
-
-            // ইনার কোর (Inner Glowing Core - শুধু রোবট মোডে স্পষ্ট হবে)
-            if (p > 0.3f) {
-                glColor3f(1.0f, 0.5f, 0.0f); // কমলা কোর
-                glBegin(GL_QUADS);
-                    glVertex2f(-0.05f, -0.02f); glVertex2f(0.05f, -0.02f);
-                    glVertex2f(0.05f, 0.02f);  glVertex2f(-0.05f, 0.02f);
-                glEnd();
-            }
-        glPopMatrix();
-
-        // 3. হাত এবং অস্ত্র (Arms & Weapons)
-        glPushMatrix();
-            glTranslatef(lerp(0.15f, 0.12f, p), lerp(0.0f, 0.1f, p), 0.0f);
-            drawCircle(0.03f, 0.2f, 0.2f, 0.2f); // কাঁধের জয়েন্ট
-
-            if (p > 0.8f) {
-                // হাতের কামান (Arm Cannon)
-                glColor3f(0.4f, 0.4f, 0.4f);
-                glBegin(GL_QUADS);
-                    glVertex2f(0.0f, -0.02f); glVertex2f(0.15f, -0.02f);
-                    glVertex2f(0.15f, 0.02f);  glVertex2f(0.0f, 0.02f);
-                glEnd();
-                // কামানের মাথায় নীল আলো
-                glColor3f(0.0f, 1.0f, 1.0f);
-                glBegin(GL_QUADS);
-                    glVertex2f(0.13f, -0.03f); glVertex2f(0.16f, -0.03f);
-                    glVertex2f(0.16f, 0.03f);  glVertex2f(0.13f, 0.03f);
-                glEnd();
-            }
-        glPopMatrix();
-
-        // 4. রোবটের মাথা (Detailed Head)
-        glPushMatrix();
-            glTranslatef(lerp(0.0f, 0.0f, p), lerp(0.05f, 0.22f, p), 0.0f);
-            // মাথার হেলমেট
-            glColor3f(0.8f, 0.1f, 0.2f);
-            glBegin(GL_POLYGON);
-                glVertex2f(-0.06f, 0.0f); glVertex2f(0.06f, 0.0f);
-                glVertex2f(0.04f, 0.08f); glVertex2f(0.0f, 0.1f); glVertex2f(-0.04f, 0.08f);
-            glEnd();
-
-            if (p > 0.8f) {
-                // সাইবারনেটিক চোখ (Glowing Eyes)
-                glColor3f(1.0f, 1.0f, 0.0f);
-                glBegin(GL_QUADS);
-                    glVertex2f(0.01f, 0.04f); glVertex2f(0.05f, 0.04f);
-                    glVertex2f(0.04f, 0.06f); glVertex2f(0.01f, 0.06f);
-                glEnd();
-            }
-        glPopMatrix();
-
-        // 5. 💥 হেভি লেজার ব্লাস্ট (Heavy Plasma Beam)
-        if (transState == 2) {
-            glEnable(GL_BLEND);
-
-            // আউটার বিম (সায়ান গ্লো)
-            glColor4f(0.0f, 1.0f, 1.0f, 0.6f);
-            glLineWidth(12.0f);
-            glBegin(GL_LINES);
-                glVertex2f(0.27f, 0.1f); glVertex2f(1.5f, 0.1f);
-            glEnd();
-
-            // ইনার বিম (সাদা/উজ্জ্বল)
-            glColor4f(1.0f, 1.0f, 1.0f, 0.9f);
-            glLineWidth(4.0f);
-            glBegin(GL_LINES);
-                glVertex2f(0.27f, 0.1f); glVertex2f(1.5f, 0.1f);
-            glEnd();
-
-            glDisable(GL_BLEND);
-        }
-
-    glPopMatrix();
-}
-
-
-// --- 🏢 মেগাস্ট্রাকচার (Cyberpunk Neon Building) ---
-void drawMegaBuilding(float x, float height, float scale, float r, float g, float b) {
-    glPushMatrix();
-        glTranslatef(x, -0.4f, 0.0f);
-        glScalef(scale, 1.0f, 1.0f);
-
-        // 1. মেইন মেটাল বডি (Dark Sloped Armor)
-        glColor3f(0.05f, 0.05f, 0.1f); // একদম ডার্ক ব্লু/কালো
-        glBegin(GL_POLYGON);
-            glVertex2f(-0.2f, 0.0f); glVertex2f(0.2f, 0.0f);
-            glVertex2f(0.15f, height); glVertex2f(-0.15f, height);
-        glEnd();
-
-        // 2. গ্লাস রিফ্লেকশন প্যানেল (Glass overlay)
-        glEnable(GL_BLEND);
-        glColor4f(r, g, b, 0.3f); // ট্রান্সপারেন্ট কালার
-        glBegin(GL_POLYGON);
-            glVertex2f(-0.15f, 0.0f); glVertex2f(0.15f, 0.0f);
-            glVertex2f(0.1f, height * 0.9f); glVertex2f(-0.1f, height * 0.9f);
-        glEnd();
-
-        // 3. পালসিং নিয়ন স্ট্রিপ (Pulsing Neon Lights on edges)
-        float neonGlow = 0.5f + (sin(pulseTime * 2.0f + x) * 0.5f); // পালস করবে
-        glColor4f(r * neonGlow, g * neonGlow, b * neonGlow, 1.0f);
-        glLineWidth(2.0f);
-        glBegin(GL_LINE_STRIP);
-            glVertex2f(-0.2f, 0.0f); glVertex2f(-0.15f, height);
-            glVertex2f(0.15f, height); glVertex2f(0.2f, 0.0f);
-        glEnd();
-
-        // 4. ফ্লোটিং ডেটা রিং (বিল্ডিংয়ের চারপাশে ঘুরবে)
-        glPushMatrix();
-            glTranslatef(0.0f, height * 0.6f, 0.0f);
-            glScalef(1.0f, 0.2f, 1.0f); // চ্যাপ্টা করে থ্রিডি রিংয়ের ফিল
-            glColor4f(1.0f, 1.0f, 0.0f, 0.6f); // Cyber Yellow
-            drawCircle(0.25f, 1.0f, 1.0f, 0.0f);
-        glPopMatrix();
-
-        glDisable(GL_BLEND);
-    glPopMatrix();
-}
-
-// --- 🚗 শহরের গাড়ি (যেটা সিগন্যাল মেনে চলবে) ---
-void drawCityCar() {
-    glPushMatrix();
-        glTranslatef(cityCarX, -0.6f, 0.0f); // রাস্তায়
-
-        // গাড়ির বডি (আধুনিক শেপ)
-        glColor3f(0.1f, 0.4f, 0.8f); // নীল গাড়ি
-        glBegin(GL_POLYGON);
-            glVertex2f(-0.15f, 0.0f); glVertex2f(0.15f, 0.0f);
-            glVertex2f(0.18f, 0.05f); glVertex2f(-0.18f, 0.05f);
-        glEnd();
-
-        // গাড়ির ছাদ (Cabin)
-        glColor3f(0.05f, 0.2f, 0.4f);
-        glBegin(GL_QUADS);
-            glVertex2f(-0.08f, 0.05f); glVertex2f(0.08f, 0.05f);
-            glVertex2f(0.05f, 0.12f);  glVertex2f(-0.1f, 0.12f);
-        glEnd();
-
-        // চাকা (Wheels)
-        glPushMatrix(); glTranslatef(-0.1f, 0.0f, 0.0f); drawCircle(0.03f, 0.1f, 0.1f, 0.1f); glPopMatrix();
-        glPushMatrix(); glTranslatef(0.1f, 0.0f, 0.0f);  drawCircle(0.03f, 0.1f, 0.1f, 0.1f); glPopMatrix();
-
-        // হেডলাইট (Headlight Beam)
-        glEnable(GL_BLEND);
-        glColor4f(1.0f, 1.0f, 0.8f, 0.4f);
-        glBegin(GL_TRIANGLES);
-            glVertex2f(0.18f, 0.03f); // লাইটের সোর্স
-            glVertex2f(0.6f, -0.05f); // রাস্তায় আলো পড়ছে
-            glVertex2f(0.6f, 0.1f);   // উপরের আলো
-        glEnd();
-        glDisable(GL_BLEND);
-    glPopMatrix();
-}
-
-void drawVillage() {
-    // 1. Pahar (Gradient Shading: Dark at bottom, Light at top)
-// 1. 3D Pahar (Left and Right sides with light and shadow)
+void drawMountains()
+{
+    // === FAR RANGE: misty blue-purple peaks ===
+    glColor3f(0.52f, 0.60f, 0.76f);
     glBegin(GL_TRIANGLES);
-        // --- Left Mountain ---
-        // Left Side (Bright / Sunlit)
-        glColor3f(0.5f, 0.7f, 0.4f); glVertex2f(-0.6f, 0.5f);  // Peak
-        glColor3f(0.3f, 0.5f, 0.2f); glVertex2f(-1.0f, -0.2f); // Bottom Left
-        glColor3f(0.4f, 0.6f, 0.3f); glVertex2f(-0.6f, -0.2f); // Bottom Center
-
-        // Right Side (Shadow)
-        glColor3f(0.5f, 0.7f, 0.4f); glVertex2f(-0.6f, 0.5f);  // Peak
-        glColor3f(0.4f, 0.6f, 0.3f); glVertex2f(-0.6f, -0.2f); // Bottom Center
-        glColor3f(0.2f, 0.4f, 0.1f); glVertex2f(-0.2f, -0.2f); // Bottom Right
-
-        // --- Right Mountain (Taller) ---
-        // Left Side (Bright)
-        glColor3f(0.4f, 0.6f, 0.3f); glVertex2f(0.2f, 0.7f);   // Peak
-        glColor3f(0.2f, 0.4f, 0.1f); glVertex2f(-0.3f, -0.2f); // Bottom Left
-        glColor3f(0.3f, 0.5f, 0.2f); glVertex2f(0.2f, -0.2f);  // Bottom Center
-
-        // Right Side (Shadow)
-        glColor3f(0.4f, 0.6f, 0.3f); glVertex2f(0.2f, 0.7f);   // Peak
-        glColor3f(0.3f, 0.5f, 0.2f); glVertex2f(0.2f, -0.2f);  // Bottom Center
-        glColor3f(0.1f, 0.3f, 0.1f); glVertex2f(0.7f, -0.2f);  // Bottom Right
+    glVertex2f(-1.00f,-0.08f); glVertex2f(-0.48f,-0.08f); glVertex2f(-0.70f, 0.74f);
+    glVertex2f(-0.62f,-0.08f); glVertex2f(-0.02f,-0.08f); glVertex2f(-0.30f, 0.84f);
+    glVertex2f(-0.08f,-0.08f); glVertex2f( 0.44f,-0.08f); glVertex2f( 0.18f, 0.70f);
+    glVertex2f( 0.32f,-0.08f); glVertex2f( 0.88f,-0.08f); glVertex2f( 0.60f, 0.80f);
+    glVertex2f( 0.72f,-0.08f); glVertex2f( 1.00f,-0.08f); glVertex2f( 0.88f, 0.52f);
     glEnd();
 
-    // NEW: Windmill in the background
+    // Shadow faces (right side darker)
+    glColor3f(0.40f, 0.48f, 0.65f);
+    glBegin(GL_TRIANGLES);
+    glVertex2f(-0.70f, 0.74f); glVertex2f(-0.48f,-0.08f); glVertex2f(-0.42f, 0.24f);
+    glVertex2f(-0.30f, 0.84f); glVertex2f(-0.02f,-0.08f); glVertex2f( 0.02f, 0.28f);
+    glVertex2f( 0.18f, 0.70f); glVertex2f( 0.44f,-0.08f); glVertex2f( 0.46f, 0.22f);
+    glVertex2f( 0.60f, 0.80f); glVertex2f( 0.88f,-0.08f); glVertex2f( 0.86f, 0.26f);
+    glEnd();
+
+    // Snow caps on tallest far peaks
+    glColor3f(0.93f, 0.96f, 1.00f);
+    glBegin(GL_TRIANGLES);
+    glVertex2f(-0.36f, 0.66f); glVertex2f(-0.24f, 0.66f); glVertex2f(-0.30f, 0.84f);
+    glVertex2f(-0.76f, 0.57f); glVertex2f(-0.64f, 0.57f); glVertex2f(-0.70f, 0.74f);
+    glVertex2f( 0.54f, 0.62f); glVertex2f( 0.66f, 0.62f); glVertex2f( 0.60f, 0.80f);
+    glVertex2f( 0.12f, 0.54f); glVertex2f( 0.24f, 0.54f); glVertex2f( 0.18f, 0.70f);
+    glEnd();
+
+    // === MID RANGE: darker green-grey peaks ===
+    glColor3f(0.26f, 0.38f, 0.28f);
+    glBegin(GL_TRIANGLES);
+    glVertex2f(-1.00f,-0.14f); glVertex2f(-0.52f,-0.14f); glVertex2f(-0.76f, 0.46f);
+    glVertex2f(-0.58f,-0.14f); glVertex2f(-0.06f,-0.14f); glVertex2f(-0.36f, 0.58f);
+    glVertex2f( 0.02f,-0.14f); glVertex2f( 0.52f,-0.14f); glVertex2f( 0.24f, 0.44f);
+    glVertex2f( 0.40f,-0.14f); glVertex2f( 0.90f,-0.14f); glVertex2f( 0.64f, 0.54f);
+    glVertex2f( 0.80f,-0.14f); glVertex2f( 1.00f,-0.14f); glVertex2f( 0.92f, 0.36f);
+    glEnd();
+
+    // Mid-range shadow sides
+    glColor3f(0.16f, 0.26f, 0.18f);
+    glBegin(GL_TRIANGLES);
+    glVertex2f(-0.76f, 0.46f); glVertex2f(-0.52f,-0.14f); glVertex2f(-0.46f, 0.12f);
+    glVertex2f(-0.36f, 0.58f); glVertex2f(-0.06f,-0.14f); glVertex2f(-0.02f, 0.18f);
+    glVertex2f( 0.64f, 0.54f); glVertex2f( 0.90f,-0.14f); glVertex2f( 0.88f, 0.18f);
+    glEnd();
+
+    // Atmospheric haze/mist at mountain base
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glColor4f(0.62f, 0.76f, 0.92f, 0.38f);
+    glBegin(GL_QUADS);
+    glVertex2f(-1.0f,-0.20f); glVertex2f( 1.0f,-0.20f);
+    glVertex2f( 1.0f, 0.10f); glVertex2f(-1.0f, 0.10f);
+    glEnd();
+    glDisable(GL_BLEND);
+}
+
+void drawCloud(float x, float y, float sc)
+{
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glPushMatrix();
+    glTranslatef(x, y, 0.0f);
+    glScalef(sc, sc, 1.0f);
+
+    // Soft grey-blue shadow below cloud
+    glPushMatrix(); glTranslatef(0.0f, -0.018f, 0.0f);
+    drawCircleAlpha(0.092f, 0.74f, 0.80f, 0.90f, 0.28f);
+    glPopMatrix();
+
+    // Core puffs — bright white
+    drawCircleAlpha(0.078f, 1.00f, 1.00f, 1.00f, 0.94f);
+
+    glPushMatrix(); glTranslatef( 0.092f,  0.006f, 0.0f);
+    drawCircleAlpha(0.062f, 0.98f, 0.98f, 1.00f, 0.94f); glPopMatrix();
+
+    glPushMatrix(); glTranslatef(-0.092f,  0.000f, 0.0f);
+    drawCircleAlpha(0.058f, 0.97f, 0.97f, 1.00f, 0.94f); glPopMatrix();
+
+    glPushMatrix(); glTranslatef( 0.042f,  0.066f, 0.0f);
+    drawCircleAlpha(0.068f, 1.00f, 1.00f, 1.00f, 0.94f); glPopMatrix();
+
+    glPushMatrix(); glTranslatef(-0.030f,  0.058f, 0.0f);
+    drawCircleAlpha(0.056f, 0.98f, 0.98f, 1.00f, 0.94f); glPopMatrix();
+
+    glPushMatrix(); glTranslatef( 0.140f, -0.012f, 0.0f);
+    drawCircleAlpha(0.048f, 0.97f, 0.97f, 1.00f, 0.90f); glPopMatrix();
+
+    glPushMatrix(); glTranslatef(-0.145f, -0.010f, 0.0f);
+    drawCircleAlpha(0.044f, 0.97f, 0.97f, 1.00f, 0.88f); glPopMatrix();
+
+    glPopMatrix();
+    glDisable(GL_BLEND);
+}
+
+void drawSingleFlower(float x, float y, float r, float g, float b)
+{
+    float cy = y + 0.044f;
+    float sz = 0.013f;
+    float pl = 0.026f;
+
+    // Stem
+    glColor3f(0.22f, 0.52f, 0.12f);
+    glLineWidth(1.5f);
+    glBegin(GL_LINES);
+    glVertex2f(x, y); glVertex2f(x, y + 0.04f);
+    glEnd();
+    glLineWidth(1.0f);
+
+    // Four petals
+    glColor3f(r, g, b);
+    glBegin(GL_QUADS);
+    glVertex2f(x-sz, cy);     glVertex2f(x+sz, cy);
+    glVertex2f(x+sz, cy+pl);  glVertex2f(x-sz, cy+pl);   // top
+    glVertex2f(x-sz, cy-pl);  glVertex2f(x+sz, cy-pl);
+    glVertex2f(x+sz, cy);     glVertex2f(x-sz, cy);       // bottom
+    glVertex2f(x-pl, cy-sz);  glVertex2f(x,    cy-sz);
+    glVertex2f(x,    cy+sz);  glVertex2f(x-pl, cy+sz);    // left
+    glVertex2f(x,    cy-sz);  glVertex2f(x+pl, cy-sz);
+    glVertex2f(x+pl, cy+sz);  glVertex2f(x,    cy+sz);    // right
+    glEnd();
+
+    // Yellow centre
+    glPushMatrix();
+    glTranslatef(x, cy, 0.0f);
+    drawCircle(0.012f, 1.0f, 0.88f, 0.0f);
+    glPopMatrix();
+}
+
+void drawFlowers()
+{
+    drawSingleFlower(-0.88f, -0.22f, 1.00f, 0.95f, 0.00f);  // yellow
+    drawSingleFlower(-0.78f, -0.24f, 1.00f, 0.35f, 0.55f);  // pink
+    drawSingleFlower(-0.68f, -0.21f, 0.85f, 0.10f, 0.10f);  // red
+    drawSingleFlower(-0.52f, -0.23f, 0.75f, 0.20f, 0.85f);  // violet
+    drawSingleFlower(-0.22f, -0.24f, 1.00f, 0.95f, 0.00f);  // yellow
+    drawSingleFlower(-0.12f, -0.22f, 0.90f, 0.20f, 0.70f);  // purple
+    drawSingleFlower( 0.08f, -0.23f, 1.00f, 0.95f, 0.00f);  // yellow
+    drawSingleFlower( 0.22f, -0.25f, 1.00f, 0.40f, 0.60f);  // pink
+    drawSingleFlower( 0.58f, -0.22f, 0.85f, 0.10f, 0.10f);  // red
+    drawSingleFlower( 0.70f, -0.24f, 1.00f, 0.95f, 0.00f);  // yellow
+    drawSingleFlower( 0.82f, -0.21f, 0.70f, 0.20f, 0.85f);  // violet
+    drawSingleFlower( 0.92f, -0.23f, 1.00f, 0.40f, 0.55f);  // pink
+}
+
+void drawDirtPath()
+{
+    // Village lane running through the scene
+    glColor3f(0.60f, 0.46f, 0.26f);
+    glBegin(GL_QUADS);
+    glVertex2f(-1.0f, -0.44f); glVertex2f( 1.0f, -0.44f);
+    glVertex2f( 1.0f, -0.30f); glVertex2f(-1.0f, -0.30f);
+    glEnd();
+
+    // Wheel-rut grooves
+    glColor3f(0.50f, 0.37f, 0.18f);
+    glLineWidth(2.0f);
+    glBegin(GL_LINES);
+    glVertex2f(-1.0f,-0.34f); glVertex2f(1.0f,-0.34f);
+    glVertex2f(-1.0f,-0.40f); glVertex2f(1.0f,-0.40f);
+    glEnd();
+    glLineWidth(1.0f);
+
+    // Scattered pebbles
+    glColor3f(0.52f, 0.52f, 0.50f);
+    glPointSize(3.0f);
+    glBegin(GL_POINTS);
+    glVertex2f(-0.72f,-0.37f); glVertex2f(-0.55f,-0.33f);
+    glVertex2f(-0.30f,-0.41f); glVertex2f(-0.08f,-0.36f);
+    glVertex2f( 0.15f,-0.38f); glVertex2f( 0.38f,-0.32f);
+    glVertex2f( 0.62f,-0.42f); glVertex2f( 0.80f,-0.35f);
+    glEnd();
+    glPointSize(1.0f);
+}
+
+void drawWell()
+{
+    // Stone well to the right of the farmhouse
+    glPushMatrix();
+    glTranslatef(-0.18f, -0.38f, 0.0f);
+
+    // Stone base cylinder
+    glColor3f(0.55f, 0.50f, 0.45f);
+    glBegin(GL_QUADS);
+    glVertex2f(-0.04f, 0.0f); glVertex2f( 0.04f, 0.0f);
+    glVertex2f( 0.04f, 0.10f); glVertex2f(-0.04f, 0.10f);
+    glEnd();
+
+    // Stone texture lines
+    glColor3f(0.42f, 0.38f, 0.34f);
+    glLineWidth(1.0f);
+    glBegin(GL_LINES);
+    glVertex2f(-0.04f, 0.03f); glVertex2f(0.04f, 0.03f);
+    glVertex2f(-0.04f, 0.06f); glVertex2f(0.04f, 0.06f);
+    glVertex2f(-0.04f, 0.09f); glVertex2f(0.04f, 0.09f);
+    glEnd();
+
+    // Wooden support posts
+    glColor3f(0.40f, 0.22f, 0.08f);
+    glBegin(GL_QUADS);
+    glVertex2f(-0.045f, 0.08f); glVertex2f(-0.025f, 0.08f);
+    glVertex2f(-0.025f, 0.20f); glVertex2f(-0.045f, 0.20f);
+    glVertex2f( 0.025f, 0.08f); glVertex2f( 0.045f, 0.08f);
+    glVertex2f( 0.045f, 0.20f); glVertex2f( 0.025f, 0.20f);
+    glEnd();
+
+    // Cross-beam
+    glBegin(GL_QUADS);
+    glVertex2f(-0.05f, 0.18f); glVertex2f(0.05f, 0.18f);
+    glVertex2f( 0.05f, 0.20f); glVertex2f(-0.05f, 0.20f);
+    glEnd();
+
+    // Tiled roof
+    glColor3f(0.62f, 0.20f, 0.10f);
+    glBegin(GL_TRIANGLES);
+    glVertex2f(-0.06f, 0.20f); glVertex2f(0.06f, 0.20f); glVertex2f(0.0f, 0.27f);
+    glEnd();
+
+    // Rope
+    glColor3f(0.38f, 0.28f, 0.12f);
+    glLineWidth(1.5f);
+    glBegin(GL_LINES);
+    glVertex2f(0.0f, 0.19f); glVertex2f(0.0f, 0.10f);
+    glEnd();
+    glLineWidth(1.0f);
+
+    glPopMatrix();
+}
+
+void drawBirdFlock(float x, float y, float bscale)
+{
+    glColor3f(0.08f, 0.08f, 0.08f);
+    glLineWidth(1.8f);
+    glPushMatrix();
+    glTranslatef(x, y, 0.0f);
+    glScalef(bscale, bscale, 1.0f);
+
+    glBegin(GL_LINE_STRIP);  // lead bird
+    glVertex2f(-0.040f, 0.040f); glVertex2f(0.0f, 0.0f); glVertex2f(0.040f, 0.040f);
+    glEnd();
+
+    glPushMatrix(); glTranslatef(0.085f, 0.030f, 0.0f); glScalef(0.75f, 0.75f, 1.0f);
+    glBegin(GL_LINE_STRIP);
+    glVertex2f(-0.040f, 0.040f); glVertex2f(0.0f, 0.0f); glVertex2f(0.040f, 0.040f);
+    glEnd(); glPopMatrix();
+
+    glPushMatrix(); glTranslatef(-0.075f, 0.018f, 0.0f); glScalef(0.65f, 0.65f, 1.0f);
+    glBegin(GL_LINE_STRIP);
+    glVertex2f(-0.040f, 0.040f); glVertex2f(0.0f, 0.0f); glVertex2f(0.040f, 0.040f);
+    glEnd(); glPopMatrix();
+
+    glPushMatrix(); glTranslatef(0.150f, 0.055f, 0.0f); glScalef(0.58f, 0.58f, 1.0f);
+    glBegin(GL_LINE_STRIP);
+    glVertex2f(-0.040f, 0.040f); glVertex2f(0.0f, 0.0f); glVertex2f(0.040f, 0.040f);
+    glEnd(); glPopMatrix();
+
+    glPushMatrix(); glTranslatef(-0.140f, 0.048f, 0.0f); glScalef(0.52f, 0.52f, 1.0f);
+    glBegin(GL_LINE_STRIP);
+    glVertex2f(-0.040f, 0.040f); glVertex2f(0.0f, 0.0f); glVertex2f(0.040f, 0.040f);
+    glEnd(); glPopMatrix();
+
+    glPopMatrix();
+    glLineWidth(1.0f);
+}
+
+// ==========================================
+// DRAWING MODULES (CITY)
+// ==========================================
+void drawSkyline()
+{
+    glColor3f(0.1f, 0.1f, 0.15f);
+    glPushMatrix();
+    glTranslatef(skylineOffset, 0.0f, 0.0f);
+    for (float x = -2.0f; x < 2.0f; x += 0.25f)
+    {
+        float h = 0.4f + (sin(x * 15.0f) * 0.3f);
+        glBegin(GL_QUADS);
+        glVertex2f(x, -0.3f);
+        glVertex2f(x + 0.2f, -0.3f);
+        glVertex2f(x + 0.2f, h);
+        glVertex2f(x, h);
+        glEnd();
+    }
+    glPopMatrix();
+}
+
+void draw3DBuilding(float x, float height, float r, float g, float b)
+{
+    glPushMatrix();
+    glTranslatef(x, -0.4f, 0.0f);
+    glColor3f(r, g, b);
+    glBegin(GL_QUADS);
+    glVertex2f(0.0f, 0.0f);
+    glVertex2f(0.2f, 0.0f);
+    glVertex2f(0.2f, height);
+    glVertex2f(0.0f, height);
+    glEnd();
+    glColor3f(r * 0.6f, g * 0.6f, b * 0.6f);
+    glBegin(GL_QUADS);
+    glVertex2f(0.2f, 0.0f);
+    glVertex2f(0.3f, 0.08f);
+    glVertex2f(0.3f, height + 0.08f);
+    glVertex2f(0.2f, height);
+    glEnd();
+    glColor3f(r * 0.8f, g * 0.8f, b * 0.8f);
+    glBegin(GL_QUADS);
+    glVertex2f(0.0f, height);
+    glVertex2f(0.2f, height);
+    glVertex2f(0.3f, height + 0.08f);
+    glVertex2f(0.1f, height + 0.08f);
+    glEnd();
+    for (float wy = 0.1f; wy < height - 0.1f; wy += 0.15f)
+    {
+        for (float wx = 0.04f; wx < 0.16f; wx += 0.08f)
+        {
+            if ((int)(wx * 100 + wy * 100 + x * 10) % 3 != 0)
+                glColor3f(0.9f, 0.9f, 0.5f);
+            else
+                glColor3f(0.15f, 0.15f, 0.2f);
+            glBegin(GL_QUADS);
+            glVertex2f(wx, wy);
+            glVertex2f(wx + 0.04f, wy);
+            glVertex2f(wx + 0.04f, wy + 0.06f);
+            glVertex2f(wx, wy + 0.06f);
+            glEnd();
+        }
+    }
+    glPopMatrix();
+}
+
+void drawTrafficLight(float x, float y)
+{
+    glPushMatrix();
+    glTranslatef(x, y, 0.0f);
+    glColor3f(0.2f, 0.2f, 0.2f);
+    glBegin(GL_QUADS);
+    glVertex2f(-0.015f, 0.0f);
+    glVertex2f(0.015f, 0.0f);
+    glVertex2f(0.015f, 0.4f);
+    glVertex2f(-0.015f, 0.4f);
+    glEnd();
+    glColor3f(0.1f, 0.1f, 0.15f);
+    glBegin(GL_QUADS);
+    glVertex2f(-0.05f, 0.4f);
+    glVertex2f(0.05f, 0.4f);
+    glVertex2f(0.05f, 0.7f);
+    glVertex2f(-0.05f, 0.7f);
+    glEnd();
+    glPushMatrix();
+    glTranslatef(0.0f, 0.62f, 0.0f);
+    if (trafficState == 2)
+        drawCircle(0.035f, 1.0f, 0.1f, 0.1f);
+    else
+        drawCircle(0.035f, 0.3f, 0.0f, 0.0f);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(0.0f, 0.52f, 0.0f);
+    if (trafficState == 1)
+        drawCircle(0.035f, 1.0f, 1.0f, 0.0f);
+    else
+        drawCircle(0.035f, 0.3f, 0.3f, 0.0f);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(0.0f, 0.42f, 0.0f);
+    if (trafficState == 0)
+        drawCircle(0.035f, 0.0f, 1.0f, 0.0f);
+    else
+        drawCircle(0.035f, 0.0f, 0.3f, 0.0f);
+    glPopMatrix();
+    glPopMatrix();
+}
+
+void drawStreetLamp(float x)
+{
+    glPushMatrix();
+    glTranslatef(x, -0.4f, 0.0f);
+    glColor3f(0.1f, 0.1f, 0.1f);
+    glBegin(GL_QUADS);
+    glVertex2f(-0.015f, 0.0f);
+    glVertex2f(0.015f, 0.0f);
+    glVertex2f(0.015f, 0.5f);
+    glVertex2f(-0.015f, 0.5f);
+    glEnd();
+    glColor3f(0.2f, 0.2f, 0.2f);
+    glBegin(GL_TRIANGLES);
+    glVertex2f(-0.06f, 0.48f);
+    glVertex2f(0.06f, 0.48f);
+    glVertex2f(0.0f, 0.53f);
+    glEnd();
+    glPushMatrix();
+    glTranslatef(0.0f, 0.47f, 0.0f);
+    drawCircle(0.02f, 1.0f, 1.0f, 0.8f);
+    glPopMatrix();
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glColor4f(1.0f, 1.0f, 0.6f, 0.25f);
+    glBegin(GL_TRIANGLES);
+    glVertex2f(0.0f, 0.47f);
+    glVertex2f(-0.25f, -0.2f);
+    glVertex2f(0.25f, -0.2f);
+    glEnd();
+    glDisable(GL_BLEND);
+    glPopMatrix();
+}
+
+void drawCityCar()
+{
+    glPushMatrix();
+    glTranslatef(cityCarX, -0.6f, 0.0f);
+    glColor3f(0.1f, 0.4f, 0.8f);
+    glBegin(GL_POLYGON);
+    glVertex2f(-0.15f, 0.0f);
+    glVertex2f(0.15f, 0.0f);
+    glVertex2f(0.18f, 0.05f);
+    glVertex2f(-0.18f, 0.05f);
+    glEnd();
+    glColor3f(0.05f, 0.2f, 0.4f);
+    glBegin(GL_QUADS);
+    glVertex2f(-0.08f, 0.05f);
+    glVertex2f(0.08f, 0.05f);
+    glVertex2f(0.05f, 0.12f);
+    glVertex2f(-0.1f, 0.12f);
+    glEnd();
+    glPushMatrix();
+    glTranslatef(-0.1f, 0.0f, 0.0f);
+    drawCircle(0.03f, 0.1f, 0.1f, 0.1f);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(0.1f, 0.0f, 0.0f);
+    drawCircle(0.03f, 0.1f, 0.1f, 0.1f);
+    glPopMatrix();
+    glEnable(GL_BLEND);
+    glColor4f(1.0f, 1.0f, 0.8f, 0.4f);
+    glBegin(GL_TRIANGLES);
+    glVertex2f(0.18f, 0.03f);
+    glVertex2f(0.6f, -0.05f);
+    glVertex2f(0.6f, 0.1f);
+    glEnd();
+    glDisable(GL_BLEND);
+    glPopMatrix();
+}
+
+// ==========================================
+// 🌌 2070 SPACE CITY MODULES
+// ==========================================
+void drawSpaceBackground()
+{
+    glEnable(GL_BLEND);
+    glPointSize(2.0f);
+    glBegin(GL_POINTS);
+    for (int i = 0; i < 60; i++)
+    {
+        float sx = -1.0f + fmod((i * 0.17f), 2.0f);
+        float sy = 0.0f + fmod((i * 0.23f), 1.0f);
+        float twinkle = 0.4f + sin(pulseTime * 4.0f + i) * 0.5f;
+        glColor4f(1.0f, 1.0f, 1.0f, twinkle);
+        glVertex2f(sx, sy);
+    }
+    glEnd();
+    glDisable(GL_BLEND);
+}
+
+void draw2070Building(float x, float height, float r, float g, float b)
+{
+    glPushMatrix();
+    glTranslatef(x, -0.2f, 0.0f);
+    float width = 0.14f + fabs(sin(x * 6.0f)) * 0.05f;
+    float depth = 0.06f;
+
+    glColor3f(0.06f, 0.07f, 0.11f);
+    glBegin(GL_QUADS);
+    glVertex2f(-width, 0.0f);
+    glVertex2f(width, 0.0f);
+    glVertex2f(width, height);
+    glVertex2f(-width, height);
+    glEnd();
+
+    glColor3f(0.03f, 0.04f, 0.08f);
+    glBegin(GL_QUADS);
+    glVertex2f(width, 0.0f);
+    glVertex2f(width + depth, depth * 0.6f);
+    glVertex2f(width + depth, height + depth * 0.6f);
+    glVertex2f(width, height);
+    glEnd();
+
+    glColor3f(0.09f, 0.1f, 0.14f);
+    glBegin(GL_QUADS);
+    glVertex2f(-width, height);
+    glVertex2f(width, height);
+    glVertex2f(width + depth, height + depth * 0.6f);
+    glVertex2f(-width + depth, height + depth * 0.6f);
+    glEnd();
+
+    glColor3f(r * 0.35f, g * 0.35f, b * 0.35f);
+    glBegin(GL_QUADS);
+    glVertex2f(-width * 0.08f, height);
+    glVertex2f(width * 0.08f, height);
+    glVertex2f(width * 0.05f, height + 0.14f);
+    glVertex2f(-width * 0.05f, height + 0.14f);
+    glEnd();
+
+    glLineWidth(1.5f);
+    glColor3f(r, g, b);
+    glBegin(GL_LINE_STRIP);
+    glVertex2f(-width, 0.0f);
+    glVertex2f(-width, height);
+    glVertex2f(width, height);
+    glVertex2f(width, 0.0f);
+    glEnd();
+
+    for (float wy = 0.06f; wy < height - 0.06f; wy += 0.1f)
+    {
+        float pulse = 0.8f; // Static window brightness
+        for (float wx = -width + 0.03f; wx < width - 0.03f; wx += 0.05f)
+        {
+            glColor4f(r * pulse, g * pulse, b * pulse, 0.85f);
+            glBegin(GL_QUADS);
+            glVertex2f(wx, wy);
+            glVertex2f(wx + 0.025f, wy);
+            glVertex2f(wx + 0.025f, wy + 0.045f);
+            glVertex2f(wx, wy + 0.045f);
+            glEnd();
+        }
+    }
+
+    glEnable(GL_BLEND);
+    glColor4f(r, g, b, 0.15f);
+    glBegin(GL_QUADS);
+    glVertex2f(-width, height * 0.55f);
+    glVertex2f(width, height * 0.55f);
+    glVertex2f(width, height * 0.62f);
+    glVertex2f(-width, height * 0.62f);
+    glEnd();
+    glDisable(GL_BLEND);
+    glPopMatrix();
+}
+
+void drawGlowingSpaceRoad()
+{
+    glColor3f(0.03f, 0.04f, 0.06f);
+    glBegin(GL_QUADS);
+    glVertex2f(-1.0f, -1.0f);
+    glVertex2f(1.0f, -1.0f);
+    glVertex2f(1.0f, -0.72f);
+    glVertex2f(-1.0f, -0.72f);
+    glEnd();
+
+    glColor3f(0.12f, 0.12f, 0.14f);
+    glBegin(GL_QUADS);
+    glVertex2f(-0.95f, -0.72f);
+    glVertex2f(0.95f, -0.72f);
+    glVertex2f(0.62f, -0.34f);
+    glVertex2f(-0.62f, -0.34f);
+    glEnd();
+
+    glEnable(GL_BLEND);
+    glColor4f(0.0f, 0.8f, 1.0f, 0.25f);
+    glBegin(GL_QUADS);
+    glVertex2f(-0.95f, -0.72f);
+    glVertex2f(-0.9f, -0.72f);
+    glVertex2f(-0.58f, -0.34f);
+    glVertex2f(-0.62f, -0.34f);
+    glVertex2f(0.9f, -0.72f);
+    glVertex2f(0.95f, -0.72f);
+    glVertex2f(0.62f, -0.34f);
+    glVertex2f(0.58f, -0.34f);
+    glEnd();
+
+    glLineWidth(3.0f);
+    glColor4f(0.0f, 1.0f, 1.0f, 0.7f);
+    glBegin(GL_LINES);
+    glVertex2f(-0.95f, -0.72f);
+    glVertex2f(-0.62f, -0.34f);
+    glVertex2f(0.95f, -0.72f);
+    glVertex2f(0.62f, -0.34f);
+    glEnd();
+
+    glColor4f(1.0f, 0.0f, 1.0f, 0.6f);
+    for (float t = 0.0f; t < 1.0f; t += 0.12f)
+    {
+        float shift = fmod(pulseTime * 0.35f, 0.12f);
+        float v = t - shift;
+        if (v < 0.0f)
+            v += 1.0f;
+
+        float y0 = -0.72f + v * 0.38f;
+        float left0 = -0.95f + v * 0.33f;
+        float right0 = 0.95f - v * 0.33f;
+
+        glBegin(GL_LINES);
+        glVertex2f(left0 + 0.38f, y0);
+        glVertex2f(right0 - 0.38f, y0);
+        glEnd();
+    }
+
+    glColor4f(0.0f, 1.0f, 0.8f, 0.35f);
+    glBegin(GL_QUADS);
+    glVertex2f(-0.3f, -0.72f);
+    glVertex2f(0.3f, -0.72f);
+    glVertex2f(0.12f, -0.34f);
+    glVertex2f(-0.12f, -0.34f);
+    glEnd();
+    glDisable(GL_BLEND);
+}
+
+void drawSpaceHoverCar(float x, float y, float r, float g, float b, bool facingRight)
+{
+    glPushMatrix();
+    glTranslatef(x, y + sin(pulseTime * 0.8f + x) * 0.01f, 0.0f);
+    if (!facingRight)
+        glScalef(-1.0f, 1.0f, 1.0f);
+    glEnable(GL_BLEND);
+    glColor4f(0.0f, 1.0f, 1.0f, 0.5f);
+    glBegin(GL_POLYGON);
+    glVertex2f(-0.3f, 0.0f);
+    glVertex2f(-0.1f, 0.02f);
+    glVertex2f(-0.1f, 0.06f);
+    glVertex2f(-0.4f, 0.03f);
+    glEnd();
+    glColor3f(0.1f, 0.1f, 0.15f);
+    glBegin(GL_POLYGON);
+    glVertex2f(-0.15f, 0.0f);
+    glVertex2f(0.15f, 0.0f);
+    glVertex2f(0.2f, 0.04f);
+    glVertex2f(0.1f, 0.08f);
+    glVertex2f(-0.1f, 0.08f);
+    glEnd();
+    glColor3f(r, g, b);
+    glBegin(GL_TRIANGLES);
+    glVertex2f(-0.05f, 0.04f);
+    glVertex2f(0.15f, 0.04f);
+    glVertex2f(0.05f, 0.08f);
+    glEnd();
+    glDisable(GL_BLEND);
+    glPopMatrix();
+}
+
+void drawForegroundMetro()
+{
+    glColor3f(0.14f, 0.14f, 0.17f);
+    glBegin(GL_QUADS);
+    glVertex2f(-1.0f, -0.08f);
+    glVertex2f(1.0f, -0.08f);
+    glVertex2f(1.0f, -0.14f);
+    glVertex2f(-1.0f, -0.14f);
+    glEnd();
+
+    glColor3f(0.09f, 0.09f, 0.12f);
+    for (float px = -0.9f; px < 1.0f; px += 0.24f)
+    {
+        glBegin(GL_QUADS);
+        glVertex2f(px, -0.14f);
+        glVertex2f(px + 0.06f, -0.14f);
+        glVertex2f(px + 0.05f, -0.7f);
+        glVertex2f(px + 0.01f, -0.7f);
+        glEnd();
+    }
+
+    glLineWidth(2.0f);
+    glColor3f(0.0f, 0.9f, 0.9f);
+    glBegin(GL_LINES);
+    glVertex2f(-1.0f, -0.09f);
+    glVertex2f(1.0f, -0.09f);
+    glVertex2f(-1.0f, -0.13f);
+    glVertex2f(1.0f, -0.13f);
+    glEnd();
+
+    glPushMatrix();
+    glTranslatef(metro2070X, -0.11f, 0.0f);
+    for (int car = 0; car < 3; car++)
+    {
+        float cx = car * 0.42f;
+
+        glColor3f(0.75f, 0.8f, 0.86f);
+        glBegin(GL_QUADS);
+        glVertex2f(cx - 0.2f, -0.01f);
+        glVertex2f(cx + 0.2f, -0.01f);
+        glVertex2f(cx + 0.2f, 0.09f);
+        glVertex2f(cx - 0.2f, 0.09f);
+        glEnd();
+
+        glColor3f(0.52f, 0.57f, 0.64f);
+        glBegin(GL_QUADS);
+        glVertex2f(cx - 0.2f, 0.09f);
+        glVertex2f(cx + 0.2f, 0.09f);
+        glVertex2f(cx + 0.17f, 0.12f);
+        glVertex2f(cx - 0.17f, 0.12f);
+        glEnd();
+
+        glColor3f(0.03f, 0.75f, 0.82f);
+        for (float wx = cx - 0.16f; wx < cx + 0.13f; wx += 0.07f)
+        {
+            glBegin(GL_QUADS);
+            glVertex2f(wx, 0.03f);
+            glVertex2f(wx + 0.05f, 0.03f);
+            glVertex2f(wx + 0.05f, 0.08f);
+            glVertex2f(wx, 0.08f);
+            glEnd();
+        }
+    }
+
+    glColor3f(0.92f, 0.96f, 1.0f);
+    glBegin(GL_POLYGON);
+    glVertex2f(1.04f, -0.01f);
+    glVertex2f(1.2f, 0.03f);
+    glVertex2f(1.2f, 0.08f);
+    glVertex2f(1.04f, 0.12f);
+    glVertex2f(0.96f, 0.09f);
+    glVertex2f(0.96f, 0.02f);
+    glEnd();
+
+    glEnable(GL_BLEND);
+    glColor4f(0.0f, 1.0f, 1.0f, 0.2f);
+    glBegin(GL_QUADS);
+    glVertex2f(-0.22f, -0.01f);
+    glVertex2f(1.15f, -0.01f);
+    glVertex2f(1.0f, 0.12f);
+    glVertex2f(-0.08f, 0.12f);
+    glEnd();
+    glDisable(GL_BLEND);
+    glPopMatrix();
+}
+
+// ==========================================
+// 🎬 CINEMATIC TRANSITION MODULES
+// ==========================================
+
+// TRANSITION 3: "Holographic Sweep" (City -> Future)
+void drawSciFiHolographicSweep(float progress)
+{
+    int w = glutGet(GLUT_WINDOW_WIDTH);
+    int h = glutGet(GLUT_WINDOW_HEIGHT);
+
+    // Calculate pixel position of the scan line (moves from top to bottom)
+    int scanLinePixelY = (int)(h * (1.0f - progress));
+
+    glEnable(GL_SCISSOR_TEST);
+
+    // 1. Draw City strictly BELOW the scan line
+    glScissor(0, 0, w, scanLinePixelY);
+    drawCity();
+
+    // 2. Draw Future strictly ABOVE the scan line
+    glScissor(0, scanLinePixelY, w, h - scanLinePixelY);
+    drawFuture();
+
+    glDisable(GL_SCISSOR_TEST);
+
+    // 3. Draw strict geometric overlays ON TOP of the sliced scenes
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Convert pixel Y back to OpenGL coordinates (-1 to 1) for the line
+    float scanLineGL_Y = 1.0f - (progress * 2.0f);
+
+    // The main bright scan line
+    glLineWidth(3.0f);
+    glColor4f(0.0f, 1.0f, 1.0f, 1.0f); // Hard Cyan
+    glBegin(GL_LINES);
+    glVertex2f(-1.0f, scanLineGL_Y);
+    glVertex2f(1.0f, scanLineGL_Y);
+    glEnd();
+
+    // Glow effect for the line (Clean geometric gradient, no soft blobs)
+    glLineWidth(12.0f);
+    glColor4f(0.0f, 1.0f, 1.0f, 0.2f);
+    glBegin(GL_LINES);
+    glVertex2f(-1.0f, scanLineGL_Y);
+    glVertex2f(1.0f, scanLineGL_Y);
+    glEnd();
+
+    // Digital "Data Rain" / Scan beams dropping down from the line
+    glLineWidth(1.0f);
+    for (int i = 0; i < 20; i++)
+    {
+        float xPos = -1.0f + (i * 0.1f) + fmod(pulseTime * 0.5f, 0.1f);
+        float beamLength = 0.1f + sin(pulseTime * 5.0f + i) * 0.05f;
+
+        glColor4f(0.0f, 1.0f, 1.0f, 0.6f);
+        glBegin(GL_LINES);
+        glVertex2f(xPos, scanLineGL_Y);
+        glVertex2f(xPos, scanLineGL_Y - beamLength);
+        glEnd();
+    }
+
+    // Moving horizontal grid lines to sell the "holographic" 3D space
+    glColor4f(0.0f, 0.5f, 0.5f, 0.15f);
+    glLineWidth(1.0f);
+    for (float y = -1.0f; y < scanLineGL_Y; y += 0.08f)
+    {
+        glBegin(GL_LINES);
+        glVertex2f(-1.0f, y);
+        glVertex2f(1.0f, y);
+        glEnd();
+    }
+
+    // Hard edge glitch blocks along the scan line (strict squares, not circles)
+    for (int i = 0; i < 10; i++)
+    {
+        float xPos = -0.9f + (i * 0.2f) + sin(pulseTime * 10.0f + i * 5.0f) * 0.05f;
+        float blockH = 0.02f + (rand() % 10) * 0.002f; // Slight randomness for digital corruption
+
+        bool isMagenta = (i + (int)pulseTime) % 3 == 0;
+        if (isMagenta)
+            glColor4f(1.0f, 0.0f, 1.0f, 0.8f);
+        else
+            glColor4f(0.0f, 1.0f, 1.0f, 0.8f);
+
+        glBegin(GL_QUADS);
+        glVertex2f(xPos, scanLineGL_Y - blockH / 2);
+        glVertex2f(xPos + 0.05f, scanLineGL_Y - blockH / 2);
+        glVertex2f(xPos + 0.05f, scanLineGL_Y + blockH / 2);
+        glVertex2f(xPos, scanLineGL_Y + blockH / 2);
+        glEnd();
+    }
+
+    glDisable(GL_BLEND);
+}
+
+// ==========================================
+// SCENE RENDERERS
+// ==========================================
+void drawVillage()
+{
+    // === 1. SKY GRADIENT ===
+    drawSkyGradient();
+
+    // === 2. FAR BACKGROUND MOUNTAINS ===
+    drawMountains();
+
+    // === 3. SUN RAYS + SUN DISC ===
+    drawSunRays();
+    glPushMatrix();
+    glTranslatef(0.6f, 0.6f, 0.0f);
+    drawCircle(0.13f, 1.0f, 0.9f, 0.0f);
+    drawCircle(0.10f, 1.0f, 0.5f, 0.0f);
+    glPopMatrix();
+
+    // === 4. ANIMATED CLOUDS ===
+    drawCloud(cloudX,         0.72f, 1.00f);
+    drawCloud(cloudX2,        0.56f, 0.82f);
+    drawCloud(cloudX3,        0.65f, 1.25f);
+    drawCloud(cloudX - 0.65f, 0.80f, 0.65f);  // small trailing cloud
+
+    // === 5. NEAR HILLS (foreground terrain) ===
+    glBegin(GL_TRIANGLES);
+    glColor3f(0.50f, 0.70f, 0.40f); glVertex2f(-0.6f,  0.5f);
+    glColor3f(0.30f, 0.50f, 0.20f); glVertex2f(-1.0f, -0.2f);
+    glColor3f(0.40f, 0.60f, 0.30f); glVertex2f(-0.6f, -0.2f);
+
+    glColor3f(0.50f, 0.70f, 0.40f); glVertex2f(-0.6f,  0.5f);
+    glColor3f(0.40f, 0.60f, 0.30f); glVertex2f(-0.6f, -0.2f);
+    glColor3f(0.20f, 0.40f, 0.10f); glVertex2f(-0.2f, -0.2f);
+
+    glColor3f(0.40f, 0.60f, 0.30f); glVertex2f( 0.2f,  0.7f);
+    glColor3f(0.20f, 0.40f, 0.10f); glVertex2f(-0.3f, -0.2f);
+    glColor3f(0.30f, 0.50f, 0.20f); glVertex2f( 0.2f, -0.2f);
+
+    glColor3f(0.40f, 0.60f, 0.30f); glVertex2f( 0.2f,  0.7f);
+    glColor3f(0.30f, 0.50f, 0.20f); glVertex2f( 0.2f, -0.2f);
+    glColor3f(0.10f, 0.30f, 0.10f); glVertex2f( 0.7f, -0.2f);
+    glEnd();
+
+    // === 6. WINDMILL ===
     drawWindmill();
 
-    // 2. Sun (With Glowing Halo Effect)
-    glPushMatrix();
-        glTranslatef(0.6f, 0.6f, 0.0f);
-        drawCircle(0.18f, 1.0f, 0.9f, 0.0f); // Outer Glow (Yellow)
-        drawCircle(0.14f, 1.0f, 0.5f, 0.0f); // Inner Core (Orange)
-    glPopMatrix();
-
-    // 3. Ground
-    glColor3f(0.3f, 0.7f, 0.2f);
+    // === 7. GREEN GROUND ===
+    glColor3f(0.30f, 0.68f, 0.20f);
     glBegin(GL_QUADS);
-        glVertex2f(-1.0f, -1.0f); glVertex2f(1.0f, -1.0f);
-        glVertex2f(1.0f, -0.2f);  glVertex2f(-1.0f, -0.2f);
+    glVertex2f(-1.0f,-1.0f); glVertex2f(1.0f,-1.0f);
+    glVertex2f( 1.0f,-0.2f); glVertex2f(-1.0f,-0.2f);
+    glEnd();
+    // Lighter grass strip at ground line
+    glColor3f(0.38f, 0.78f, 0.28f);
+    glBegin(GL_QUADS);
+    glVertex2f(-1.0f,-0.20f); glVertex2f(1.0f,-0.20f);
+    glVertex2f( 1.0f,-0.24f); glVertex2f(-1.0f,-0.24f);
     glEnd();
 
-    // 4. River with Animated Ripples
-    glColor3f(0.1f, 0.5f, 0.9f); // Deep Blue River
+    // === 8. DIRT LANE ===
+    drawDirtPath();
+
+    // === 9. RIVER / WATER ===
+    glColor3f(0.12f, 0.52f, 0.88f);
     glBegin(GL_QUADS);
-        glVertex2f(-1.0f, -0.9f); glVertex2f(1.0f, -0.9f);
-        glVertex2f(1.0f, -0.5f);  glVertex2f(-1.0f, -0.5f);
+    glVertex2f(-1.0f,-0.9f); glVertex2f(1.0f,-0.9f);
+    glVertex2f( 1.0f,-0.5f); glVertex2f(-1.0f,-0.5f);
     glEnd();
+    // Water shimmer highlight strip
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glColor4f(0.55f, 0.82f, 1.0f, 0.35f);
+    glBegin(GL_QUADS);
+    glVertex2f(-1.0f,-0.54f); glVertex2f(1.0f,-0.54f);
+    glVertex2f( 1.0f,-0.50f); glVertex2f(-1.0f,-0.50f);
+    glEnd();
+    glDisable(GL_BLEND);
 
-
-
-    // Water Ripples (White dashed lines that move)
-    glColor4f(1.0f, 1.0f, 1.0f, 0.5f); // Semi-transparent white
+    glColor4f(1.0f, 1.0f, 1.0f, 0.5f);
     glLineWidth(2.0f);
-    for(float y = -0.8f; y < -0.55f; y += 0.1f) {
+    for (float ry = -0.8f; ry < -0.55f; ry += 0.1f)
+    {
         glBegin(GL_LINES);
-        for(float x = -1.0f; x < 1.0f; x += 0.3f) {
-            glVertex2f(x + rippleOffset, y);
-            glVertex2f(x + rippleOffset + 0.1f, y);
+        for (float rx = -1.0f; rx < 1.0f; rx += 0.3f)
+        {
+            glVertex2f(rx + rippleOffset, ry);
+            glVertex2f(rx + rippleOffset + 0.1f, ry);
         }
         glEnd();
-
-            // NEW: Boat on the river
-    drawBoat();
     }
-drawSmoke();
+    drawBoat();
+    glLineWidth(1.0f);
 
-    // 6. Add Fences
-    drawFence(-0.9f, -0.3f);
-    drawFence(-0.2f, -0.3f);
+    // === 10. CHIMNEY SMOKE ===
+    drawSmoke();
 
-// 5. 3D Isometric Hut
+    // === 11. EXTENDED FENCES ===
+    drawFence(-0.92f, -0.30f);
+    drawFence(-0.62f, -0.30f);
+    drawFence(-0.32f, -0.30f);
+    drawFence( 0.08f, -0.30f);
+    drawFence( 0.38f, -0.30f);
+
+    // === 12. WILDFLOWERS ===
+    drawFlowers();
+
+    // === 13. STONE WELL ===
+    drawWell();
+
+    // === 14. FARMHOUSE ===
     glPushMatrix();
-        glTranslatef(-0.6f, -0.4f, 0.0f); // Position
-
-        // Front Wall (Light Brown)
-        glColor3f(0.8f, 0.6f, 0.4f);
-        glBegin(GL_QUADS);
-            glVertex2f(-0.2f, 0.0f); glVertex2f(0.1f, 0.0f);
-            glVertex2f(0.1f, 0.3f);  glVertex2f(-0.2f, 0.3f);
-        glEnd();
-
-        // Side Wall (Darker Brown for Shadow)
-        glColor3f(0.5f, 0.3f, 0.1f);
-        glBegin(GL_QUADS);
-            glVertex2f(0.1f, 0.0f);  glVertex2f(0.35f, 0.1f);
-            glVertex2f(0.35f, 0.4f); glVertex2f(0.1f, 0.3f);
-        glEnd();
-
-        // Front Roof (Bright Red)
-        glColor3f(0.8f, 0.2f, 0.2f);
-        glBegin(GL_TRIANGLES);
-            glVertex2f(-0.25f, 0.3f); glVertex2f(0.15f, 0.3f);
-            glVertex2f(-0.05f, 0.5f);
-        glEnd();
-
-        // Side Roof (Dark Red)
-        glColor3f(0.6f, 0.1f, 0.1f);
-        glBegin(GL_QUADS);
-            glVertex2f(0.15f, 0.3f);  glVertex2f(-0.05f, 0.5f);
-            glVertex2f(0.2f, 0.6f);   glVertex2f(0.4f, 0.4f);
-        glEnd();
-
-        // Door on Front Wall
-        glColor3f(0.3f, 0.1f, 0.05f);
-        glBegin(GL_QUADS);
-            glVertex2f(-0.1f, 0.0f);  glVertex2f(0.0f, 0.0f);
-            glVertex2f(0.0f, 0.15f);  glVertex2f(-0.1f, 0.15f);
-        glEnd();
-
-        // Window on Side Wall
-        glColor3f(0.1f, 0.6f, 0.8f); // Glass blue
-        glBegin(GL_QUADS);
-            glVertex2f(0.15f, 0.15f); glVertex2f(0.25f, 0.19f);
-            glVertex2f(0.25f, 0.29f); glVertex2f(0.15f, 0.25f);
-        glEnd();
-
-        // 🌿 6. Lotapata (Creeping Vines on the Walls)
-        glPointSize(3.0f); // পাতার সাইজ
-        glBegin(GL_POINTS);
-            // সামনের দেয়াল বেয়ে ওঠা লতা
-            for(float vy = 0.0f; vy < 0.28f; vy += 0.015f) {
-                // sin() দিয়ে লতাটাকে একটু আঁকাবাঁকা (organic) করা হয়েছে
-                float vx = -0.18f + sin(vy * 40.0f) * 0.015f;
-
-                glColor3f(0.1f, 0.4f, 0.1f); // গাঢ় সবুজ পাতা
-                glVertex2f(vx, vy);
-
-                glColor3f(0.3f, 0.6f, 0.1f); // হালকা সবুজ পাতা (ডিটেইলস)
-                glVertex2f(vx + 0.01f, vy - 0.01f);
-            }
-
-            // পাশের দেয়ালে জানালার কাছে ওঠা লতা
-            for(float vy = 0.0f; vy < 0.25f; vy += 0.02f) {
-                float vx = 0.32f + cos(vy * 50.0f) * 0.01f;
-                glColor3f(0.1f, 0.3f, 0.05f); // ছায়াতে থাকা গাঢ় পাতা
-                glVertex2f(vx, vy);
-            }
-        glEnd();
+    glTranslatef(-0.6f, -0.4f, 0.0f);
+    glColor3f(0.8f, 0.6f, 0.4f);
+    glBegin(GL_QUADS);
+    glVertex2f(-0.2f, 0.0f); glVertex2f(0.1f, 0.0f);
+    glVertex2f( 0.1f, 0.3f); glVertex2f(-0.2f, 0.3f);
+    glEnd();
+    glColor3f(0.5f, 0.3f, 0.1f);
+    glBegin(GL_QUADS);
+    glVertex2f(0.1f, 0.0f); glVertex2f(0.35f, 0.10f);
+    glVertex2f(0.35f, 0.4f); glVertex2f(0.1f, 0.3f);
+    glEnd();
+    glColor3f(0.8f, 0.2f, 0.2f);
+    glBegin(GL_TRIANGLES);
+    glVertex2f(-0.25f, 0.3f); glVertex2f(0.15f, 0.3f); glVertex2f(-0.05f, 0.5f);
+    glEnd();
+    glColor3f(0.6f, 0.1f, 0.1f);
+    glBegin(GL_QUADS);
+    glVertex2f(0.15f, 0.3f); glVertex2f(-0.05f, 0.5f);
+    glVertex2f(0.2f,  0.6f); glVertex2f( 0.4f,  0.4f);
+    glEnd();
+    glColor3f(0.3f, 0.1f, 0.05f);
+    glBegin(GL_QUADS);
+    glVertex2f(-0.1f, 0.0f); glVertex2f(0.0f, 0.0f);
+    glVertex2f( 0.0f, 0.15f); glVertex2f(-0.1f, 0.15f);
+    glEnd();
+    glColor3f(0.1f, 0.6f, 0.8f);
+    glBegin(GL_QUADS);
+    glVertex2f(0.15f, 0.15f); glVertex2f(0.25f, 0.19f);
+    glVertex2f(0.25f, 0.29f); glVertex2f(0.15f, 0.25f);
+    glEnd();
+    glPointSize(3.0f);
+    glBegin(GL_POINTS);
+    for (float vy = 0.0f; vy < 0.28f; vy += 0.015f)
+    {
+        float vx = -0.18f + sin(vy * 40.0f) * 0.015f;
+        glColor3f(0.1f, 0.4f, 0.1f); glVertex2f(vx, vy);
+        glColor3f(0.3f, 0.6f, 0.1f); glVertex2f(vx + 0.01f, vy - 0.01f);
+    }
+    for (float vy = 0.0f; vy < 0.25f; vy += 0.02f)
+    {
+        float vx = 0.32f + cos(vy * 50.0f) * 0.01f;
+        glColor3f(0.1f, 0.3f, 0.05f); glVertex2f(vx, vy);
+    }
+    glEnd();
     glPopMatrix();
 
+    // === 15. TREES & FOREST ===
+    float sway = sin(windTime) * 1.5f;
 
-    // --- (Keep your existing mountains, sun, ground, river, hut, fences here) ---
+    // Two feature trees (original positions)
+    glPushMatrix(); glTranslatef(0.40f, -0.30f, 0.0f);
+    drawTree(sway); glPopMatrix();
 
-    // Calculate wind sway angle using sine wave (sways between -5 and +5 degrees)
-    float sway = sin(windTime) * 5.0f;
+    glPushMatrix(); glTranslatef(0.72f, -0.40f, 0.0f); glScalef(0.90f, 0.90f, 1.0f);
+    drawTree(sway * 0.80f); glPopMatrix();
 
-    // 5. Gach (Trees with realistic sway!)
-    glPushMatrix();
-        glTranslatef(0.4f, -0.3f, 0.0f);
-        drawTree(sway); // Pass the sway angle
-    glPopMatrix();
+    // Right-side forest — foreground trees
+    glPushMatrix(); glTranslatef(0.88f, -0.36f, 0.0f); glScalef(0.70f, 0.70f, 1.0f);
+    drawTree(sway * 1.15f); glPopMatrix();
 
-    glPushMatrix();
-        glTranslatef(0.7f, -0.4f, 0.0f);
-        glScalef(0.8f, 0.8f, 1.0f);
-        drawTree(sway * 1.2f); // Choto gach ektu beshi dolbe (1.2x)
-    glPopMatrix();
+    glPushMatrix(); glTranslatef(0.97f, -0.32f, 0.0f); glScalef(0.80f, 0.80f, 1.0f);
+    drawTree(sway * 0.92f); glPopMatrix();
 
-    // 6. Draw the Cartoon Wind & Birds
+    // Right-side forest — depth (smaller, sit on hill line)
+    glPushMatrix(); glTranslatef(0.82f, -0.20f, 0.0f); glScalef(0.55f, 0.55f, 1.0f);
+    drawTree(sway * 1.05f); glPopMatrix();
+
+    glPushMatrix(); glTranslatef(0.93f, -0.18f, 0.0f); glScalef(0.50f, 0.50f, 1.0f);
+    drawTree(sway * 0.80f); glPopMatrix();
+
+    // Left-side trees near windmill
+    glPushMatrix(); glTranslatef(-0.52f, -0.36f, 0.0f); glScalef(0.78f, 0.78f, 1.0f);
+    drawTree(sway * 1.10f); glPopMatrix();
+
+    glPushMatrix(); glTranslatef(-0.42f, -0.40f, 0.0f); glScalef(0.68f, 0.68f, 1.0f);
+    drawTree(sway * 0.88f); glPopMatrix();
+
+    // === 16. WIND STREAKS ===
     drawWindStreaks();
-    drawBirds();
+
+    // === 17. BIRD FLOCKS ===
+    drawBirdFlock(birdX,  0.60f, 1.00f);  // main flock, high up
+    drawBirdFlock(birdX2, 0.44f, 0.72f);  // second flock, lower & smaller
 }
 
-
-void drawCity() {
-    // 1. পেছনের ছায়া (Parallax Skyline)
+void drawCity()
+{
     drawSkyline();
 
-    // 2. Road & Footpath (তোমার পুরোনো কোড)
-    glColor3f(0.15f, 0.15f, 0.15f); // Dark Road
+    glColor3f(0.15f, 0.15f, 0.15f);
     glBegin(GL_QUADS);
-        glVertex2f(-1.0f, -1.0f); glVertex2f(1.0f, -1.0f);
-        glVertex2f(1.0f, -0.45f); glVertex2f(-1.0f, -0.45f);
+    glVertex2f(-1.0f, -1.0f);
+    glVertex2f(1.0f, -1.0f);
+    glVertex2f(1.0f, -0.45f);
+    glVertex2f(-1.0f, -0.45f);
     glEnd();
 
-    glColor3f(0.5f, 0.5f, 0.5f); // Concrete Footpath
+    glColor3f(0.5f, 0.5f, 0.5f);
     glBegin(GL_QUADS);
-        glVertex2f(-1.0f, -0.45f); glVertex2f(1.0f, -0.45f);
-        glVertex2f(1.0f, -0.4f);   glVertex2f(-1.0f, -0.4f);
+    glVertex2f(-1.0f, -0.45f);
+    glVertex2f(1.0f, -0.45f);
+    glVertex2f(1.0f, -0.4f);
+    glVertex2f(-1.0f, -0.4f);
     glEnd();
 
-    // Divider Lines
     glColor3f(1.0f, 0.8f, 0.0f);
-    for (float i = -0.9f; i < 1.0f; i += 0.4f) {
+    for (float i = -0.9f; i < 1.0f; i += 0.4f)
+    {
         glBegin(GL_QUADS);
-            glVertex2f(i, -0.75f); glVertex2f(i + 0.2f, -0.75f);
-            glVertex2f(i + 0.2f, -0.72f); glVertex2f(i, -0.72f);
+        glVertex2f(i, -0.75f);
+        glVertex2f(i + 0.2f, -0.75f);
+        glVertex2f(i + 0.2f, -0.72f);
+        glVertex2f(i, -0.72f);
         glEnd();
     }
 
-    // 3. 3D Buildings (এখানে ম্যাজিক!)
-    // পজিশন, উচ্চতা, এবং RGB কালার দিয়ে দিয়েছি
-    draw3DBuilding(-0.9f, 0.6f,  0.3f, 0.3f, 0.4f); // নীলচে বিল্ডিং
-    draw3DBuilding(-0.5f, 0.9f,  0.4f, 0.3f, 0.3f); // লালচে উঁচু বিল্ডিং
-    draw3DBuilding(-0.1f, 0.5f,  0.3f, 0.4f, 0.3f); // সবুজ বিল্ডিং
-    draw3DBuilding(0.3f,  0.8f,  0.4f, 0.4f, 0.4f); // গ্রে বিল্ডিং
-    draw3DBuilding(0.7f,  0.7f,  0.3f, 0.3f, 0.5f); // ডিপ ব্লু বিল্ডিং
+    draw3DBuilding(-0.9f, 0.6f, 0.3f, 0.3f, 0.4f);
+    draw3DBuilding(-0.5f, 0.9f, 0.4f, 0.3f, 0.3f);
+    draw3DBuilding(-0.1f, 0.5f, 0.3f, 0.4f, 0.3f);
+    draw3DBuilding(0.3f, 0.8f, 0.4f, 0.4f, 0.4f);
+    draw3DBuilding(0.7f, 0.7f, 0.3f, 0.3f, 0.5f);
 
-// 4. Street Lamps (আপগ্রেডেড)
     drawStreetLamp(-0.7f);
     drawStreetLamp(0.7f);
-
-    // 5. Traffic Signal (রাস্তার ডানদিকে)
     drawTrafficLight(0.3f, -0.4f);
-
-    // 6. City Car (গাড়ি)
     drawCityCar();
 }
 
-
-void drawFuture() {
-    // 1. Circuit Grid Ground (সাইবারপাংক মাটি)
-    glColor3f(0.02f, 0.02f, 0.08f);
+void drawFuture()
+{
+    glColor3f(0.01f, 0.01f, 0.06f);
     glBegin(GL_QUADS);
-        glVertex2f(-1.0f, -1.0f); glVertex2f(1.0f, -1.0f);
-        glVertex2f(1.0f, -0.4f);  glVertex2f(-1.0f, -0.4f);
+    glVertex2f(-1.0f, -1.0f);
+    glVertex2f(1.0f, -1.0f);
+    glVertex2f(1.0f, 1.0f);
+    glVertex2f(-1.0f, 1.0f);
     glEnd();
 
-    glLineWidth(2.0f);
-    glColor3f(0.0f, 0.8f, 0.8f); // নিয়নের নীল গ্রিড
-    glBegin(GL_LINES);
-    // পেছনের দিকে চলে যাওয়া লাইন (Perspective)
-    for(float i = -1.5f; i <= 1.5f; i += 0.3f) {
-        glVertex2f(i, -1.0f); glVertex2f(i * 0.3f, -0.4f);
+    drawSpaceBackground();
+
+    glColor3f(0.03f, 0.04f, 0.08f);
+    for (float bx = -1.0f; bx < 1.0f; bx += 0.16f)
+    {
+        float h = 0.12f + fabs(sin(bx * 12.0f)) * 0.2f;
+        glBegin(GL_QUADS);
+        glVertex2f(bx, -0.2f);
+        glVertex2f(bx + 0.13f, -0.2f);
+        glVertex2f(bx + 0.13f, -0.2f + h);
+        glVertex2f(bx, -0.2f + h);
+        glEnd();
     }
-    // আনুভূমিক লাইন
-    for(float y = -0.9f; y < -0.4f; y += 0.15f) {
-        glVertex2f(-1.0f, y); glVertex2f(1.0f, y);
-    }
-    glEnd();
 
-// 2. NEW: Cyberpunk Megastructures
-    // পেছনে বিশাল সাইজের বিল্ডিং, সামনে মাঝারি
-    drawMegaBuilding(-0.7f, 0.9f, 1.2f, 0.0f, 1.0f, 1.0f); // Cyan Megatower
-    drawMegaBuilding(0.7f, 0.8f, 1.0f, 1.0f, 0.0f, 1.0f);  // Magenta Megatower
-    drawMegaBuilding(-0.3f, 0.6f, 0.8f, 1.0f, 1.0f, 0.0f); // Yellow Tower
-    drawMegaBuilding(0.3f, 0.5f, 0.7f, 0.0f, 1.0f, 0.0f);  // Green Data Center
+    draw2070Building(-0.78f, 0.58f, 0.2f, 0.9f, 1.0f);
+    draw2070Building(-0.48f, 0.82f, 0.0f, 1.0f, 0.9f);
+    draw2070Building(-0.16f, 0.66f, 0.7f, 0.8f, 1.0f);
+    draw2070Building(0.16f, 0.75f, 1.0f, 0.45f, 0.9f);
+    draw2070Building(0.44f, 0.6f, 0.3f, 1.0f, 0.8f);
+    draw2070Building(0.76f, 0.87f, 1.0f, 0.65f, 0.3f);
 
-    // 3. NEW: The Quantum Nexus (মাঝখানে আকাশে)
-    drawMegaNexus();
-
-    // 4. 🤖 দ্য মেকানিক্যাল ট্রান্সফর্মার (আগের কোডটাই থাকবে)
-    drawTransformer();
+    drawGlowingSpaceRoad();
+    drawSpaceHoverCar(spaceCar1X, -0.43f, 1.0f, 0.2f, 0.6f, false);
+    drawSpaceHoverCar(spaceCar2X, -0.49f, 0.0f, 0.9f, 0.4f, true);
+    drawForegroundMetro();
 }
 
 // ==========================================
 // CORE RENDERING ENGINE
 // ==========================================
-void display() {
+void display()
+{
     glClearColor(bgR, bgG, bgB, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
-    // 🎬 Fade Timing Logic (পর্দা গাঢ় থাকা অবস্থায় সিন চেঞ্জ হবে)
     if (currentState == VILLAGE ||
-       (currentState == TRANSITION_TO_CITY && transitionProgress < 0.5f) ||
-       (currentState == TRANSITION_TO_VILLAGE && transitionProgress >= 0.5f)) {
+        (currentState == TRANSITION_TO_CITY && transitionProgress < 0.5f))
+    {
         drawVillage();
     }
     else if (currentState == CITY ||
-            (currentState == TRANSITION_TO_FUTURE && transitionProgress < 0.5f) ||
-            (currentState == TRANSITION_TO_CITY && transitionProgress >= 0.5f)) {
+             (currentState == TRANSITION_TO_CITY && transitionProgress >= 0.5f))
+    {
         drawCity();
     }
-    else if (currentState == FUTURE ||
-            (currentState == TRANSITION_TO_VILLAGE && transitionProgress < 0.5f) ||
-            (currentState == TRANSITION_TO_FUTURE && transitionProgress >= 0.5f)) {
+    else if (currentState == FUTURE)
+    {
         drawFuture();
     }
 
-    // 🌫️ The Magic Fade Overlay (কুয়াশা বা আকাশের রঙের সাথে মিশে যাওয়া)
-    if (fadeAlpha > 0.0f) {
+    // Apply new structural transitions completely isolated from normal scene drawing
+    if (currentState == TRANSITION_TO_FUTURE)
+    {
+        drawSciFiHolographicSweep(transitionProgress);
+    }
+
+    // Keep simple fade ONLY for the basic Village <-> City transitions
+    if (fadeAlpha > 0.0f && currentState == TRANSITION_TO_CITY)
+    {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        // পর্দাটা আকাশের রঙেরই হবে, শুধু Alpha (স্বচ্ছতা) চেঞ্জ হবে
         glColor4f(bgR, bgG, bgB, fadeAlpha);
         glBegin(GL_QUADS);
-            glVertex2f(-1.0f, -1.0f); glVertex2f(1.0f, -1.0f);
-            glVertex2f(1.0f, 1.0f);   glVertex2f(-1.0f, 1.0f);
+        glVertex2f(-1.0f, -1.0f);
+        glVertex2f(1.0f, -1.0f);
+        glVertex2f(1.0f, 1.0f);
+        glVertex2f(-1.0f, 1.0f);
         glEnd();
         glDisable(GL_BLEND);
     }
@@ -972,268 +1701,188 @@ void display() {
 // ==========================================
 // TIME & STATE MANAGER
 // ==========================================
-void update(int value) {
-    timer += 0.1f; // Increment timer (each 100ms)
+void update(int value)
+{
+    timer += 0.1f;
 
-    // ==========================================
-    // ANIMATION LOGIC (সব মুভিং অবজেক্টের ম্যাথ)
-    // ==========================================
-
-    // 🤖 Transformer Logic State Machine
-    // শুধুমাত্র ফিউচার মোডেই এই অ্যানিমেশন কাজ করবে
-    if (currentState == FUTURE) {
-        switch(transState) {
-            case 0: // 🚗 Driving In (গাড়ি হয়ে স্ক্রিনের মাঝখানে আসবে)
-                transX += 0.02f;
-                if (transX >= 0.0f) transState = 1; // মাঝখানে আসলে থামবে
-                break;
-
-            case 1: // 🔄 Morphing to Robot (ট্রান্সফর্ম শুরু)
-                transProgress += 0.02f;
-                if (transProgress >= 1.0f) {
-                    transProgress = 1.0f;
-                    transState = 2; // ট্রান্সফর্ম শেষ, এখন অ্যাকশন!
-                }
-                break;
-
-            case 2: // 💥 Robot Action (লেজার মারবে ২ সেকেন্ড ধরে)
-                laserTimer += 0.1f;
-                pulseTime += 0.5f; // লেজার মারার সময় রোবট কাঁপবে (ঐচ্ছিক)
-                if (laserTimer >= 2.0f) {
-                    transState = 3; // মারা শেষ, এবার ব্যাক করবে
-                    laserTimer = 0.0f;
-                }
-                break;
-
-            case 3: // 🔄 Morphing to Car (আবার গাড়ি হয়ে যাবে)
-                transProgress -= 0.02f;
-                if (transProgress <= 0.0f) {
-                    transProgress = 0.0f;
-                    transState = 4;
-                }
-                break;
-
-            case 4: // 🚗 Drive Away (স্ক্রিন থেকে চলে যাবে)
-                transX += 0.03f; // একটু জোরে পালাবে
-                break;
-        }
+    if (currentState == FUTURE || currentState == TRANSITION_TO_FUTURE)
+    {
+        metro2070X += 0.04f; // Slower metro movement
+        if (metro2070X > 3.0f)
+            metro2070X = -3.0f;
+        spaceCar1X -= 0.03f;
+        if (spaceCar1X < -1.5f)
+            spaceCar1X = 1.5f;
+        spaceCar2X += 0.04f;
+        if (spaceCar2X > 1.5f)
+            spaceCar2X = -1.5f;
     }
-// 🚦 1. Traffic Signal Timer Logic
+
     trafficTimer += 0.05f;
-    if (trafficTimer < 3.0f) {
-        trafficState = 0; // প্রথম ৩ সেকেন্ড: Green
-    } else if (trafficTimer < 4.5f) {
-        trafficState = 1; // পরের ১.৫ সেকেন্ড: Yellow
-    } else if (trafficTimer < 8.0f) {
-        trafficState = 2; // শেষের ৩.৫ সেকেন্ড: Red
-    } else {
-        trafficTimer = 0.0f; // আবার সবুজ হয়ে লুপ শুরু হবে
-    }
+    if (trafficTimer < 3.0f)
+        trafficState = 0;
+    else if (trafficTimer < 4.5f)
+        trafficState = 1;
+    else if (trafficTimer < 8.0f)
+        trafficState = 2;
+    else
+        trafficTimer = 0.0f;
 
-    // 🚗 2. Smart Car Movement (গাড়ি সিগন্যাল চেক করবে)
-    // গাড়িটা সিগন্যালের একটু আগে (X = 0.0 থেকে 0.2 এর মধ্যে) থাকলে ব্রেক করবে।
-    if (trafficState == 0) { // Green (সবুজ)
-        cityCarX += 0.015f;  // ফুল স্পিডে চলবে
+    if (trafficState == 0)
+        cityCarX += 0.015f;
+    else if (trafficState == 1)
+    {
+        if (cityCarX > -0.1f && cityCarX < 0.2f)
+            cityCarX += 0.005f;
+        else
+            cityCarX += 0.015f;
     }
-    else if (trafficState == 1) { // Yellow (হলুদ)
-        if (cityCarX > -0.1f && cityCarX < 0.2f) {
-            cityCarX += 0.005f; // সিগন্যালের কাছাকাছি থাকলে স্লো হয়ে যাবে
-        } else {
-            cityCarX += 0.015f; // দূরে থাকলে বা পার হয়ে গেলে চলতে থাকবে
+    else if (trafficState == 2)
+    {
+        if (cityCarX > -0.1f && cityCarX < 0.2f)
+        {
         }
+        else
+            cityCarX += 0.015f;
     }
-    else if (trafficState == 2) { // Red (লাল)
-        if (cityCarX > -0.1f && cityCarX < 0.2f) {
-            // ব্রেক! গাড়ি এখানে থেমে থাকবে, X এর ভ্যালু বাড়বে না।
-        } else {
-            cityCarX += 0.015f; // সিগন্যাল পার হয়ে গেলে আর থামবে না
-        }
-    }
-
-    // গাড়ি স্ক্রিন পার হয়ে গেলে আবার বামদিক থেকে আসবে
-    if (cityCarX > 1.5f) {
+    if (cityCarX > 1.5f)
         cityCarX = -1.5f;
-    }
-    // City Background Animation (Parallax)
-    skylineOffset -= 0.005f; // খুব ধীরে মুভ করবে, যাতে বিশালত্ব বোঝায়
-    if (skylineOffset < -1.0f) skylineOffset = 0.0f; // লুপ
-    // 1. Cloud
+
+    skylineOffset -= 0.005f;
+    if (skylineOffset < -1.0f)
+        skylineOffset = 0.0f;
     cloudX += 0.005f;
-    if (cloudX > 1.2f) cloudX = -1.2f;
-
-    // 2. River Ripples
+    if (cloudX > 1.2f)
+        cloudX = -1.2f;
     rippleOffset += 0.01f;
-    if (rippleOffset > 0.3f) rippleOffset = 0.0f;
-
-    // 3. Hover Car (Future)
-    hoverY = sin(pulseTime) * 0.1f;
-
-    // 4. City Car
+    if (rippleOffset > 0.3f)
+        rippleOffset = 0.0f;
     carX += 0.02f;
-    if (carX > 1.2f) carX = -1.2f;
-
-    // 🔮 Hologram Spin Animation
-    holoAngle += 0.05f;
-    // 5. Neon Pulse
+    if (carX > 1.2f)
+        carX = -1.2f;
     pulseTime += 0.2f;
-
-    // 💎 AI Nexus Animation
-    nexusAngle += 1.0f; // ক্রিস্টাল রিং স্পিন করবে
-    nexusHover = sin(pulseTime) * 0.05f; // ক্রিস্টালটা শূন্যে ভাসবে (Hover)
-
-    // 6. NEW: Wind & Tree Sway (গাছ দোলানো)
     windTime += 0.1f;
-
-    // 7. NEW: Wind Streaks (হাওয়ার রেখা)
     windStreakX += 0.05f;
-    if (windStreakX > 1.5f) windStreakX = -1.5f;
-
-    // 8. NEW: Flying Birds (পাখি ওড়া)
+    if (windStreakX > 1.5f)
+        windStreakX = -1.5f;
     birdX += 0.01f;
-    if (birdX > 1.2f) birdX = -1.2f;
-
-    // 9. NEW: Windmill Rotation (হাওয়াকল ঘুরবে)
-    windmillAngle -= 1.5f; // মাইনাস দিলে ডানদিক থেকে বামে ঘুরবে (হাওয়ার দিকে)
-    if (windmillAngle <= -360.0f) windmillAngle += 360.0f; // Reset angle to avoid overflow
-
-    // 10. NEW: Boat Movement (নৌকা ভাসবে)
-    boatX -= 0.005f; // ডান থেকে বামে যাবে
-    if (boatX < -1.5f) boatX = 1.5f; // স্ক্রিন পার হলে আবার ডানদিকে চলে আসবে
-
-    // 11. NEW: Chimney Smoke (ধোঁয়া উপরে উঠবে)
+    if (birdX > 1.2f)
+        birdX = -1.2f;
+    birdX2 += 0.008f;
+    if (birdX2 > 1.3f)
+        birdX2 = -1.3f;
+    cloudX2 += 0.003f;
+    if (cloudX2 > 1.5f)
+        cloudX2 = -1.5f;
+    cloudX3 += 0.006f;
+    if (cloudX3 > 1.5f)
+        cloudX3 = -1.5f;
+    windmillAngle -= 1.5f;
+    if (windmillAngle <= -360.0f)
+        windmillAngle += 360.0f;
+    boatX -= 0.005f;
+    if (boatX < -1.5f)
+        boatX = 1.5f;
     smokeProgress += 0.02f;
-    if (smokeProgress >= 1.0f) smokeProgress = 0.0f; // ধোঁয়া লুপ হবে
+    if (smokeProgress >= 1.0f)
+        smokeProgress = 0.0f;
 
-    // ==========================================
-    // STATE MACHINE LOGIC (সিন পরিবর্তনের লজিক)
-    // ==========================================
-switch(currentState) {
-        case VILLAGE:
-            if (timer >= 5.0f) { // Stay in village for 5 seconds
-                currentState = TRANSITION_TO_CITY;
-                timer = 0.0f;
-            }
-            break;
+    switch (currentState)
+    {
+    case VILLAGE:
+        bgR = 0.5f;
+        bgG = 0.8f;
+        bgB = 1.0f;
+        if (timer >= 5.0f)
+        {
+            currentState = TRANSITION_TO_CITY;
+            timer = 0.0f;
+        }
+        break;
 
-        case TRANSITION_TO_CITY:
-            transitionProgress += 0.02f;
-            bgR = lerp(0.5f, 0.2f, transitionProgress);
-            bgG = lerp(0.8f, 0.2f, transitionProgress);
-            bgB = lerp(1.0f, 0.4f, transitionProgress);
+    case TRANSITION_TO_CITY:
+        transitionProgress += 0.02f;
+        bgR = lerp(0.5f, 0.2f, transitionProgress);
+        bgG = lerp(0.8f, 0.2f, transitionProgress);
+        bgB = lerp(1.0f, 0.4f, transitionProgress);
+        if (transitionProgress < 0.5f)
+            fadeAlpha = transitionProgress * 2.0f;
+        else
+            fadeAlpha = 1.0f - ((transitionProgress - 0.5f) * 2.0f);
+        if (transitionProgress >= 1.0f)
+        {
+            currentState = CITY;
+            transitionProgress = 0.0f;
+            fadeAlpha = 0.0f;
+            timer = 0.0f;
+        }
+        break;
 
-            // Fade Math (0 থেকে 0.5 পর্যন্ত গাঢ় হবে, 0.5 এর পর ক্লিয়ার হবে)
-            if (transitionProgress < 0.5f) {
-                fadeAlpha = transitionProgress * 2.0f; // 0.0 -> 1.0
-            } else {
-                fadeAlpha = 1.0f - ((transitionProgress - 0.5f) * 2.0f); // 1.0 -> 0.0
-            }
+    case CITY:
+        bgR = 0.2f;
+        bgG = 0.2f;
+        bgB = 0.4f; // Set strict city background color
+        if (timer >= 5.0f)
+        {
+            currentState = TRANSITION_TO_FUTURE;
+            timer = 0.0f;
+        }
+        break;
 
-            if (transitionProgress >= 1.0f) {
-                currentState = CITY;
-                transitionProgress = 0.0f;
-                fadeAlpha = 0.0f; // রিসেট
-                timer = 0.0f;
-            }
-            break;
+    case TRANSITION_TO_FUTURE:
+        transitionProgress += 0.015f; // Slow, deliberate structural sweep
+        // Background is handled entirely inside the draw function via scissoring
+        if (transitionProgress >= 1.0f)
+        {
+            currentState = FUTURE;
+            transitionProgress = 0.0f;
+            timer = 0.0f;
+            bgR = 0.0f;
+            bgG = 0.0f;
+            bgB = 0.05f; // Snap to future color
+        }
+        break;
 
-        case CITY:
-            if (timer >= 5.0f) { // Stay in city for 5 seconds
-                currentState = TRANSITION_TO_FUTURE;
-                timer = 0.0f;
-            }
-            break;
-
-        case TRANSITION_TO_FUTURE:
-            transitionProgress += 0.02f;
-            bgR = lerp(0.2f, 0.0f, transitionProgress); // Dark to Deep Purple/Black
-            bgG = lerp(0.2f, 0.0f, transitionProgress);
-            bgB = lerp(0.4f, 0.1f, transitionProgress);
-
-            // Fade Math (শহর থেকে ফিউচারে যাওয়ার সময়)
-            if (transitionProgress < 0.5f) {
-                fadeAlpha = transitionProgress * 2.0f;
-            } else {
-                fadeAlpha = 1.0f - ((transitionProgress - 0.5f) * 2.0f);
-            }
-
-            if (transitionProgress >= 1.0f) {
-                currentState = FUTURE;
-                transitionProgress = 0.0f;
-                fadeAlpha = 0.0f; // রিসেট
-                timer = 0.0f;
-            }
-            break;
-
-       case FUTURE:
-            // আগে ছিল 5 সেকেন্ডের টাইমার, এখন সেটা ডিলিট করে দিয়েছি।
-            // এর বদলে আমরা চেক করছি ট্রান্সফর্মার তার শেষ স্টেজে (transState == 4)
-            // আছে কি না এবং সে স্ক্রিন পার হয়ে যাচ্ছে কি না।
-
-            if (transState == 4 && transX >= 1.4f) {
-                currentState = TRANSITION_TO_VILLAGE;
-
-                // নেক্সট লুপের জন্য ট্রান্সফর্মারকে আবার রিসেট করে দিলাম
-                transX = -1.2f;
-                transState = 0;
-                timer = 0.0f;
-            }
-            break;
-
-        case TRANSITION_TO_VILLAGE:
-            transitionProgress += 0.02f;
-            bgR = lerp(0.0f, 0.5f, transitionProgress); // Back to Sky Blue
-            bgG = lerp(0.0f, 0.8f, transitionProgress);
-            bgB = lerp(0.1f, 1.0f, transitionProgress);
-
-            // Fade Math (ফিউচার থেকে আবার গ্রামে ফেরার সময়)
-            if (transitionProgress < 0.5f) {
-                fadeAlpha = transitionProgress * 2.0f;
-            } else {
-                fadeAlpha = 1.0f - ((transitionProgress - 0.5f) * 2.0f);
-            }
-
-            if (transitionProgress >= 1.0f) {
-                currentState = VILLAGE;
-                transitionProgress = 0.0f;
-                fadeAlpha = 0.0f; // রিসেট
-                timer = 0.0f;
-            }
-            break;
+    case FUTURE:
+        bgR = 0.0f;
+        bgG = 0.0f;
+        bgB = 0.05f;
+        if (timer >= 8.0f)
+        {
+            currentState = VILLAGE;
+            timer = 0.0f;
+            transitionProgress = 0.0f;
+            bgR = 0.5f;
+            bgG = 0.8f;
+            bgB = 1.0f;
+        }
+        break;
     }
 
     glutPostRedisplay();
-
-    // 100ms এর জায়গায় 30ms দিলে অ্যানিমেশন একদম স্মুথ (Smooth) মাখনের মতো হবে!
-    glutTimerFunc(100, update, 0);
+    glutTimerFunc(80, update, 0);
 }
 
-// ==========================================
-// INITIALIZATION & MAIN
-// ==========================================
-void init() {
+void init()
+{
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluOrtho2D(-1.0, 1.0, -1.0, 1.0); // Simple 2D coordinate system
+    gluOrtho2D(-1.0, 1.0, -1.0, 1.0);
     glMatrixMode(GL_MODELVIEW);
-
-
-    // Enable blending for potential future alpha transitions
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv)
+{
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB); // Double buffering is CRITICAL for smooth animation
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(800, 600);
     glutInitWindowPosition(100, 100);
-    glutCreateWindow("Computer Graphics Project: The Evolution");
-
+    glutCreateWindow("Computer Graphics Project: The Evolution - Cinematic Transitions");
     init();
-
     glutDisplayFunc(display);
-    glutTimerFunc(100, update, 0); // Start the timer loop
-
+    glutTimerFunc(30, update, 0);
     glutMainLoop();
     return 0;
 }

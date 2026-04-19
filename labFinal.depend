@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1775587849 source:e:\labfinal\main.cpp
+1776579720 source:e:\labfinal\main.cpp
 	<GL/glut.h>
 	<iostream>
 	<math.h>
