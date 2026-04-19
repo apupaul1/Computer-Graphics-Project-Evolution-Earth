@@ -2,11 +2,22 @@
 #include <iostream>
 #include <math.h>
 
+// Forward declarations
+void keyboardCallback(unsigned char key, int x, int y);
+
+// Mathematical constant for trigonometric calculations
 const float PI = 3.14159265f;
 
 // ==========================================
-// UTILITY FUNCTIONS
+// UTILITY FUNCTIONS - Basic Drawing Primitives
 // ==========================================
+
+/**
+ * drawCircle: Draws a filled circle using GL_POLYGON
+ * @param radius: Circle radius in normalized coordinates
+ * @param r, g, b: RGB color values (0.0 to 1.0)
+ * Uses 36 vertices (10-degree increments) for smooth circle approximation
+ */
 void drawCircle(float radius, float r, float g, float b)
 {
     glColor3f(r, g, b);
@@ -19,6 +30,12 @@ void drawCircle(float radius, float r, float g, float b)
     glEnd();
 }
 
+/**
+ * drawCircleAlpha: Draws a semi-transparent circle with alpha blending
+ * @param radius: Circle radius in normalized coordinates
+ * @param r, g, b: RGB color values (0.0 to 1.0)
+ * @param a: Alpha (transparency) value (0.0 = fully transparent, 1.0 = opaque)
+ */
 void drawCircleAlpha(float radius, float r, float g, float b, float a)
 {
     glColor4f(r, g, b, a);
@@ -31,6 +48,11 @@ void drawCircleAlpha(float radius, float r, float g, float b, float a)
     glEnd();
 }
 
+/**
+ * drawCar: Draws a simple 2D car with body and wheels
+ * Composition: Red body (quads) + two black wheels (circles)
+ * Used as a generic car sprite in village and city scenes
+ */
 void drawCar()
 {
     glColor3f(0.8f, 0.1f, 0.1f);
@@ -40,6 +62,7 @@ void drawCar()
     glVertex2f(0.1f, 0.05f);
     glVertex2f(-0.1f, 0.05f);
     glEnd();
+
     glColor3f(0.6f, 0.0f, 0.0f);
     glBegin(GL_QUADS);
     glVertex2f(-0.05f, 0.05f);
@@ -47,6 +70,7 @@ void drawCar()
     glVertex2f(0.03f, 0.08f);
     glVertex2f(-0.03f, 0.08f);
     glEnd();
+
     glPushMatrix();
     glTranslatef(-0.06f, 0.0f, 0.0f);
     drawCircle(0.02f, 0.1f, 0.1f, 0.1f);
@@ -57,6 +81,12 @@ void drawCar()
     glPopMatrix();
 }
 
+/**
+ * drawTree: Draws a stylized tree with trunk and layered foliage
+ * @param swayAngle: Wind sway rotation angle applied to entire tree
+ * Composition: Brown trunk + 4 layers of green triangles (cone shape) + circular highlight
+ * Used in village scene for natural environment
+ */
 void drawTree(float swayAngle)
 {
     glPushMatrix();
@@ -116,6 +146,14 @@ void drawTree(float swayAngle)
     glPopMatrix();
 }
 
+/**
+ * lerp: Linear interpolation between two values
+ * @param start: Starting value
+ * @param end: Ending value
+ * @param t: Time/blend factor (0.0 to 1.0, clamped)
+ * @return: Interpolated value between start and end
+ * Used for smooth animations and transitions
+ */
 float lerp(float start, float end, float t)
 {
     if (t > 1.0f)
@@ -127,7 +165,14 @@ float lerp(float start, float end, float t)
 // GRAPHICS ALGORITHMS IMPLEMENTATION
 // ==========================================
 
-// ⚪ MIDPOINT CIRCLE ALGORITHM (Bresenham)
+/**
+ * MIDPOINT CIRCLE ALGORITHM (Bresenham Circle Algorithm)
+ * Efficiently draws circles using integer arithmetic and octant symmetry
+ * Reduces computation by only calculating one octant and mirroring
+ * @param centerX, centerY: Center position of circle
+ * @param radius: Circle radius
+ * @param r, g, b: RGB color values
+ */
 void drawCircleBresenham(float centerX, float centerY, float radius, float r, float g, float b)
 {
     glColor3f(r, g, b);
@@ -166,7 +211,15 @@ void drawCircleBresenham(float centerX, float centerY, float radius, float r, fl
     glPointSize(1.0f);
 }
 
-// ─ DDA LINE ALGORITHM (Digital Differential Analyzer)
+/**
+ * DDA LINE ALGORITHM (Digital Differential Analyzer)
+ * Draws lines using floating-point arithmetic
+ * Calculates incremental steps along x and y axes
+ * @param x1, y1: Starting point coordinates
+ * @param x2, y2: Ending point coordinates
+ * @param r, g, b: RGB color values
+ * @param width: Line width in pixels
+ */
 void drawLineDDA(float x1, float y1, float x2, float y2, float r, float g, float b, float width)
 {
     glColor3f(r, g, b);
@@ -199,116 +252,6 @@ void drawLineDDA(float x1, float y1, float x2, float y2, float r, float g, float
     glLineWidth(1.0f);
 }
 
-// 🔀 SHEAR TRANSFORMATION MATRIX (2D Shear transformation)
-void applyShearTransform(float shearX, float shearY)
-{
-    // Shear matrix for 2D transformation
-    // | 1   shearX  0 |
-    // | shearY  1   0 |
-    // | 0   0    1 |
-    GLfloat shearMatrix[16] = {
-        1.0f, shearY, 0.0f, 0.0f,
-        shearX, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f};
-    glMultMatrixf(shearMatrix);
-}
-
-// Demo function: Show all 5 transformations together
-void drawTransformationDemo()
-{
-    glPushMatrix();
-    glTranslatef(-0.85f, 0.85f, 0.0f); // Translation: Move to top-left
-
-    // 1. TRANSLATION (already applied above)
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glBegin(GL_QUADS);
-    glVertex2f(-0.02f, -0.02f);
-    glVertex2f(0.02f, -0.02f);
-    glVertex2f(0.02f, 0.02f);
-    glVertex2f(-0.02f, 0.02f);
-    glEnd();
-
-    // 2. ROTATION (30 degrees)
-    glPushMatrix();
-    glRotatef(30.0f, 0.0f, 0.0f, 1.0f);
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glBegin(GL_TRIANGLES);
-    glVertex2f(0.0f, 0.05f);
-    glVertex2f(-0.03f, -0.05f);
-    glVertex2f(0.03f, -0.05f);
-    glEnd();
-    glPopMatrix();
-
-    // 3. SCALING (1.5x scale)
-    glPushMatrix();
-    glTranslatef(0.12f, 0.0f, 0.0f);
-    glScalef(1.5f, 1.5f, 1.0f);
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glBegin(GL_QUADS);
-    glVertex2f(-0.015f, -0.015f);
-    glVertex2f(0.015f, -0.015f);
-    glVertex2f(0.015f, 0.015f);
-    glVertex2f(-0.015f, 0.015f);
-    glEnd();
-    glPopMatrix();
-
-    // 4. REFLECTION (horizontal flip: scale -1 on X)
-    glPushMatrix();
-    glTranslatef(0.24f, 0.0f, 0.0f);
-    glScalef(-1.5f, 1.0f, 1.0f); // Reflection + scaling
-    glColor3f(1.0f, 1.0f, 0.0f);
-    glBegin(GL_TRIANGLES);
-    glVertex2f(0.0f, 0.05f);
-    glVertex2f(-0.03f, -0.05f);
-    glVertex2f(0.03f, -0.05f);
-    glEnd();
-    glPopMatrix();
-
-    // 5. SHEAR TRANSFORMATION
-    glPushMatrix();
-    glTranslatef(0.36f, 0.0f, 0.0f);
-    applyShearTransform(0.3f, 0.0f); // Shear X by 0.3
-    glColor3f(1.0f, 0.0f, 1.0f);
-    glBegin(GL_QUADS);
-    glVertex2f(-0.02f, -0.04f);
-    glVertex2f(0.02f, -0.04f);
-    glVertex2f(0.02f, 0.04f);
-    glVertex2f(-0.02f, 0.04f);
-    glEnd();
-    glPopMatrix();
-
-    glPopMatrix();
-}
-
-// Demo function: Show Midpoint Circle and DDA Line Algorithms
-void drawAlgorithmDemo()
-{
-    glPushMatrix();
-    glTranslatef(-0.85f, 0.65f, 0.0f);
-
-    // Title area for algorithms
-    glColor3f(0.8f, 0.8f, 0.8f);
-    glPointSize(1.0f);
-    glBegin(GL_LINES);
-    glVertex2f(0.0f, 0.0f);
-    glVertex2f(0.5f, 0.0f);
-    glEnd();
-
-    // Midpoint Circle Algorithm Demo
-    glPushMatrix();
-    glTranslatef(0.08f, 0.0f, 0.0f);
-    drawCircleBresenham(0.0f, 0.0f, 0.06f, 0.0f, 1.0f, 0.5f);
-    glPopMatrix();
-
-    // DDA Line Algorithm Demo
-    glPushMatrix();
-    glTranslatef(0.25f, -0.02f, 0.0f);
-    drawLineDDA(0.0f, 0.0f, 0.08f, 0.08f, 1.0f, 0.5f, 0.0f, 2.0f);
-    glPopMatrix();
-
-    glPopMatrix();
-}
 
 // ==========================================
 // FORWARD DECLARATIONS (Fixes Scope Errors)
@@ -316,12 +259,19 @@ void drawAlgorithmDemo()
 void drawVillage();
 void drawCity();
 void drawFuture();
-void drawTransformationDemo();
-void drawAlgorithmDemo();
 
 // ==========================================
 // GLOBAL VARIABLES & SYSTEM STATES
 // ==========================================
+
+/**
+ * Scene State Enumeration
+ * VILLAGE: Initial peaceful rural scene
+ * TRANSITION_TO_CITY: Fade between village and city
+ * CITY: Urban city environment
+ * TRANSITION_TO_FUTURE: Sci-fi holographic transition
+ * FUTURE: 2070 futuristic space city
+ */
 enum SceneState
 {
     VILLAGE,
@@ -331,43 +281,92 @@ enum SceneState
     FUTURE
 };
 
+// Current active scene state
 SceneState currentState = VILLAGE;
 
-float cloudX = -1.2f;
-float carX = -1.2f;
-float holoAngle = 0.0f;
-float trafficTimer = 0.0f;
-int trafficState = 0;
-float skylineOffset = 0.0f;
-float cityCarX = -1.2f;
-float fadeAlpha = 0.0f;
-float windmillAngle = 0.0f;
-float boatX = 1.2f;
-float smokeProgress = 0.0f;
-float windTime = 0.0f;
-float windStreakX = -1.5f;
-float birdX = -1.0f;
-float rippleOffset = 0.0f;
-float timer = 0.0f;
-float transitionProgress = 0.0f;
-float pulseTime = 0.0f;
-float hoverY = 0.0f;
+// Pause state variable - controls animation and scene transitions
+bool isPaused = false;           // true = animations frozen, false = running normally
 
-// Sci-Fi Future Space City Variables
-float metro2070X = -3.0f;
-float spaceCar1X = 1.5f;
-float spaceCar2X = -1.5f;
+float cloudX = -1.2f;           // Horizontal position of animated cloud
+float carX = -1.2f;             // Horizontal position of village car in water
+float holoAngle = 0.0f;         // Rotation angle for holographic transition effects
+float trafficTimer = 0.0f;      // Timer countdown for traffic light state cycling
+int trafficState = 0;           // Traffic light state: 0=red, 1=yellow, 2=green
+float skylineOffset = 0.0f;     // Horizontal scroll offset for parallax skyline animation
+float cityCarX = -1.2f;         // Horizontal position of city street car
+float fadeAlpha = 0.0f;         // Alpha transparency for scene fade transitions (0.0-1.0)
+float windmillAngle = 0.0f;     // Current rotation angle of windmill blades (in degrees)
+float boatX = 1.2f;             // Horizontal position of animated boat on water
+float smokeProgress = 0.0f;     // Animation progress for rising smoke effect (0.0-1.0)
+float windTime = 0.0f;          // Time counter for wind simulation
+float windStreakX = -1.5f;      // Horizontal position of wind streak animation
+float birdX = -1.0f;            // Horizontal position of primary bird flock
+float rippleOffset = 0.0f;      // Animation offset for water ripple effects
+float timer = 0.0f;             // General-purpose timer for animations
+float transitionProgress = 0.0f; // Scene transition progress (0.0-1.0)
+float pulseTime = 0.0f;         // Time counter for pulsing/glowing effects
+float hoverY = 0.0f;            // Vertical hover offset for floating animation
 
-float bgR = 0.5f, bgG = 0.8f, bgB = 1.0f;
+// ======== FUTURE SCENE VARIABLES ========
+float metro2070X = -3.0f;       // Horizontal position of futuristic metro train
+float spaceCar1X = 1.5f;        // Horizontal position of first space hover car
+float spaceCar2X = -1.5f;       // Horizontal position of second space hover car
 
-// Village enhanced animation vars
-float birdX2  =  0.30f;
-float cloudX2 =  0.50f;
-float cloudX3 = -0.40f;
+// ======== BACKGROUND COLOR ========
+float bgR = 0.5f, bgG = 0.8f, bgB = 1.0f;  // Background RGB color (updated per scene)
+
+// ======== VILLAGE SECONDARY ANIMATION VARIABLES ========
+float birdX2  =  0.30f;         // Horizontal position of secondary bird flock
+float cloudX2 =  0.50f;         // Horizontal position of secondary cloud
+float cloudX3 = -0.40f;         // Horizontal position of tertiary cloud
 
 // ==========================================
-// DRAWING MODULES (VILLAGE)
+// PAUSE/INPUT SYSTEM
 // ==========================================
+
+/**
+ * displayPauseOverlay: Called when paused (no visual overlay)
+ * Currently just a placeholder for potential future pause UI
+ */
+void displayPauseOverlay()
+{
+    // No overlay - just pause the animations
+}
+
+/**
+ * keyboardCallback: Handles keyboard input for pause/resume
+ * @param key: ASCII key pressed
+ * @param x, y: Mouse position (unused)
+ * 
+ * SPACE: Toggle pause state
+ * ESC: Exit application
+ */
+void keyboardCallback(unsigned char key, int x, int y)
+{
+    std::cout << "Key pressed: " << (int)key << std::endl;  // Debug output
+    if (key == ' ')  // SPACE key to pause/resume
+    {
+        isPaused = !isPaused;
+        std::cout << "Pause toggled: " << (isPaused ? "PAUSED" : "RUNNING") << std::endl;
+        glutPostRedisplay();
+    }
+    else if (key == 27)  // ESC key to exit
+    {
+        exit(0);
+    }
+}
+
+// DRAWING MODULES 
+
+// Village
+
+/**
+ * drawFence: Renders a wooden fence segment
+ * @param x, y: Position of fence base
+ * 
+ * Composition: Vertical wooden slats connected by horizontal rails
+ * Transformation: Translation to position
+ */
 void drawFence(float x, float y)
 {
     glColor3f(0.5f, 0.3f, 0.1f);
@@ -391,6 +390,13 @@ void drawFence(float x, float y)
     glPopMatrix();
 }
 
+/**
+ * drawBoat: Renders animated boat on water
+ * Uses boatX variable for horizontal position
+ * 
+ * Composition: Wooden hull (brown polygon), mast (line), sail (white lines)
+ * Transformation: Translation (boatX for animation)
+ */
 void drawBoat()
 {
     glPushMatrix();
@@ -416,6 +422,15 @@ void drawBoat()
     glPopMatrix();
 }
 
+/**
+ * drawWindmill: Renders rotating windmill with animated blades
+ * Uses windmillAngle variable for blade rotation
+ * 
+ * Composition: Wooden tower (beige), rotating blades (4 triangles),
+ * center hub. Blades rotate 90° between each iteration.
+ * Transformation: Translation (position), Rotation (windmillAngle),
+ * Scaling (0.8x for size), nested Rotation (blade angles)
+ */
 void drawWindmill()
 {
     glPushMatrix();
@@ -445,6 +460,14 @@ void drawWindmill()
     glPopMatrix();
 }
 
+/**
+ * drawSmoke: Renders rising smoke effect from chimney
+ * Uses smokeProgress variable (0.0-1.0) for animation cycle
+ * 
+ * Composition: Translucent grey circles that rise and expand
+ * Effect: Y offset increases, size grows, alpha decreases with progress
+ * Transformation: Translation (rising Y motion, X drift)
+ */
 void drawSmoke()
 {
     float yOffset = smokeProgress * 0.3f;
@@ -459,6 +482,13 @@ void drawSmoke()
     glPopMatrix();
 }
 
+/**
+ * drawWindStreaks: Renders animated wind effect lines
+ * Uses windStreakX variable for horizontal scrolling
+ * 
+ * Composition: White semi-transparent lines that simulate wind
+ * Transformation: Translation (windStreakX for continuous scroll)
+ */
 void drawWindStreaks()
 {
     glColor4f(1.0f, 1.0f, 1.0f, 0.4f);
@@ -476,6 +506,16 @@ void drawWindStreaks()
     glPopMatrix();
 }
 
+/**
+ * drawBirdFlock: Renders a flock of birds in formation
+ * @param x, y: Center position of flock
+ * @param scale: Size scaling of entire flock
+ * 
+ * Composition: 5 birds in V-formation using line segments (V-shapes)
+ * Each bird is progressively scaled smaller for depth effect
+ * Transformation: Translation (x,y position), nested Translations (bird offsets),
+ * Scaling (individual bird sizes 0.75x, 0.65x, 0.58x, 0.52x)
+ */
 void drawBirdFlock(float x, float y, float scale);
 
 void drawBirds()
@@ -483,6 +523,14 @@ void drawBirds()
     drawBirdFlock(birdX, 0.6f, 1.0f);
 }
 
+/**
+ * drawSunRays: Renders sun with radiating ray effects
+ * 
+ * Composition: Central sun circle (yellow) with two rings of rays
+ * Inner rays (opaque yellow), outer rays (semi-transparent yellow glow)
+ * Uses 12 rays at 30-degree intervals
+ * Transformation: Translation to top-right position (0.6f, 0.6f)
+ */
 void drawSunRays()
 {
     glPushMatrix();
@@ -535,10 +583,13 @@ void drawSunRays()
     glPopMatrix();
 }
 
-// ==========================================
-// DRAWING MODULES (VILLAGE - ENHANCED)
-// ==========================================
-
+/**
+ * drawSkyGradient: Renders sky background with color gradient
+ * 
+ * Creates vertical gradient: Deep azure (top) to pale peachy-blue (horizon)
+ * Uses GL_QUADS with different colors per vertex for smooth interpolation
+ * Effect: Warm sunset/morning sky aesthetic
+ */
 void drawSkyGradient()
 {
     // Warm sky gradient: deeper blue at top, soft peachy horizon
@@ -552,6 +603,15 @@ void drawSkyGradient()
     glEnd();
 }
 
+/**
+ * drawMountains: Renders layered mountain landscape
+ * 
+ * Three mountain ranges:
+ * 1. Far range: Misty blue-purple peaks with snow caps
+ * 2. Mid range: Darker green-grey peaks with shadow sides
+ * 3. Atmospheric haze: Semi-transparent overlay at mountain base
+ * Uses shading (darker faces, lighter highlights) for 3D effect
+ */
 void drawMountains()
 {
     // === FAR RANGE: misty blue-purple peaks ===
@@ -611,6 +671,16 @@ void drawMountains()
     glDisable(GL_BLEND);
 }
 
+/**
+ * drawCloud: Renders fluffy cloud sprite with soft edges
+ * @param x, y: Center position of cloud
+ * @param sc: Size scaling factor
+ * 
+ * Composition: 7 overlapping circles (puffs) with alpha blending
+ * Shadow layer below main cloud body
+ * Transformation: Translation (x,y), nested Translations (puff offsets),
+ * Scaling (sc parameter)
+ */
 void drawCloud(float x, float y, float sc)
 {
     glEnable(GL_BLEND);
@@ -649,6 +719,14 @@ void drawCloud(float x, float y, float sc)
     glDisable(GL_BLEND);
 }
 
+/**
+ * drawSingleFlower: Renders a single flower sprite
+ * @param x, y: Position of flower base
+ * @param r, g, b: Petal color
+ * 
+ * Composition: Green stem (line), 4 petals (quads), yellow center (circle)
+ * Transformation: Translation to position, nested Translation for center
+ */
 void drawSingleFlower(float x, float y, float r, float g, float b)
 {
     float cy = y + 0.044f;
@@ -683,6 +761,13 @@ void drawSingleFlower(float x, float y, float r, float g, float b)
     glPopMatrix();
 }
 
+/**
+ * drawFlowers: Renders garden of wildflowers with varied colors
+ * 
+ * Creates 12 individual flowers placed across landscape
+ * Colors: Yellow, pink, red, violet in natural distribution
+ * Uses drawSingleFlower with different RGB color values
+ */
 void drawFlowers()
 {
     drawSingleFlower(-0.88f, -0.22f, 1.00f, 0.95f, 0.00f);  // yellow
@@ -699,6 +784,13 @@ void drawFlowers()
     drawSingleFlower( 0.92f, -0.23f, 1.00f, 0.40f, 0.55f);  // pink
 }
 
+/**
+ * drawDirtPath: Renders village dirt road with details
+ * 
+ * Composition: Brown dirt path (quads), wheel rut grooves (lines),
+ * scattered pebbles (point sprites)
+ * Texture: Simulated with line patterns and point placement
+ */
 void drawDirtPath()
 {
     // Village lane running through the scene
@@ -729,6 +821,13 @@ void drawDirtPath()
     glPointSize(1.0f);
 }
 
+/**
+ * drawWell: Renders stone well structure
+ * 
+ * Composition: Stone base (quads), wooden support posts and crossbeam,
+ * red-tiled roof (triangle), hanging rope
+ * Transformation: Translation to position (center of scene)
+ */
 void drawWell()
 {
     // Stone well to the right of the farmhouse
@@ -819,14 +918,39 @@ void drawBirdFlock(float x, float y, float bscale)
     glLineWidth(1.0f);
 }
 
-// ==========================================
-// DRAWING MODULES (CITY)
-// ==========================================
+// City
+
+/**
+ * drawSkyline: Renders animated skyline using DDA algorithm
+ * Uses Digital Differential Analyzer to draw building outline edges
+ */
 void drawSkyline()
 {
-    glColor3f(0.1f, 0.1f, 0.15f);
+    // Draw skyline using DDA algorithm for building profiles
     glPushMatrix();
     glTranslatef(skylineOffset, 0.0f, 0.0f);
+    
+    float prevX = -2.0f;
+    float prevH = 0.4f + (sin(prevX * 15.0f) * 0.3f);
+    
+    // Draw skyline outline using DDA lines
+    for (float x = -2.0f + 0.25f; x < 2.0f; x += 0.25f)
+    {
+        float h = 0.4f + (sin(x * 15.0f) * 0.3f);
+        
+        // Vertical line (going up or down)
+        drawLineDDA(prevX + 0.2f, prevH, prevX + 0.2f, h, 0.3f, 0.3f, 0.4f, 2.0f);
+        
+        // Horizontal line (roof)
+        drawLineDDA(prevX + 0.2f, h, x, h, 0.3f, 0.3f, 0.4f, 2.0f);
+        
+        prevX = x;
+        prevH = h;
+    }
+    
+    // Fill the skyline with color
+    glColor3f(0.1f, 0.1f, 0.15f);
+    glAlphaFunc(GL_GREATER, 0.0f);
     for (float x = -2.0f; x < 2.0f; x += 0.25f)
     {
         float h = 0.4f + (sin(x * 15.0f) * 0.3f);
@@ -837,9 +961,19 @@ void drawSkyline()
         glVertex2f(x, h);
         glEnd();
     }
+    
     glPopMatrix();
 }
 
+/**
+ * draw3DBuilding: Renders 3D-style building with depth and windows
+ * @param x: Horizontal position
+ * @param height: Building height
+ * @param r, g, b: Base color of building
+ * 
+ * Composition: Main face, side face (darker), roof (lighter), window grid
+ * Transformation: Translation to position, quads for 3D isometric effect
+ */
 void draw3DBuilding(float x, float height, float r, float g, float b)
 {
     glPushMatrix();
@@ -865,6 +999,7 @@ void draw3DBuilding(float x, float height, float r, float g, float b)
     glVertex2f(0.3f, height + 0.08f);
     glVertex2f(0.1f, height + 0.08f);
     glEnd();
+
     for (float wy = 0.1f; wy < height - 0.1f; wy += 0.15f)
     {
         for (float wx = 0.04f; wx < 0.16f; wx += 0.08f)
@@ -884,7 +1019,14 @@ void draw3DBuilding(float x, float height, float r, float g, float b)
     glPopMatrix();
 }
 
-void drawTrafficLight(float x, float y)
+/**
+ * drawTrafficLight: Renders traffic light pole with LED indicators
+ * @param x, y: Position of traffic light base
+ * 
+ * Composition: Pole (quads), lights box (quads), three LED circles (red/yellow/green)
+ * Uses trafficState variable to determine which light is active
+ */
+void drawTrafficLight(float x, float y) 
 {
     glPushMatrix();
     glTranslatef(x, y, 0.0f);
@@ -911,7 +1053,7 @@ void drawTrafficLight(float x, float y)
     glPopMatrix();
     glPushMatrix();
     glTranslatef(0.0f, 0.52f, 0.0f);
-    if (trafficState == 1)
+    if (trafficState == 1) 
         drawCircle(0.035f, 1.0f, 1.0f, 0.0f);
     else
         drawCircle(0.035f, 0.3f, 0.3f, 0.0f);
@@ -926,6 +1068,13 @@ void drawTrafficLight(float x, float y)
     glPopMatrix();
 }
 
+/**
+ * drawStreetLamp: Renders street lamp post with light fixture
+ * @param x: Horizontal position of lamp
+ * 
+ * Composition: Metal pole, lamp head (triangular), light emission effect
+ * Transformation: Translation for positioning
+ */
 void drawStreetLamp(float x)
 {
     glPushMatrix();
@@ -959,6 +1108,13 @@ void drawStreetLamp(float x)
     glPopMatrix();
 }
 
+/**
+ * drawCityCar: Renders animated vehicle moving on city street
+ * Uses cityCarX variable for horizontal animation
+ * 
+ * Composition: Car body with wheels positioned and scaled
+ * Transformation: Translation (cityCarX for movement), scaling for wheels
+ */
 void drawCityCar()
 {
     glPushMatrix();
@@ -996,9 +1152,15 @@ void drawCityCar()
     glPopMatrix();
 }
 
-// ==========================================
-// 🌌 2070 SPACE CITY MODULES
-// ==========================================
+//  2070 SPACE CITY MODULES
+
+/**
+ * drawSpaceBackground: Renders starfield for space scenes
+ * 
+ * Renders 60 twinkling stars using point sprites
+ * Stars use pseudo-random positioning and twinkling animation
+ * with sine wave variation for glow effect
+ */
 void drawSpaceBackground()
 {
     glEnable(GL_BLEND);
@@ -1015,7 +1177,17 @@ void drawSpaceBackground()
     glEnd();
     glDisable(GL_BLEND);
 }
-
+ 
+/**
+ * draw2070Building: Renders futuristic 2070-style architecture
+ * @param x, y: Position of building
+ * @param height: Building height
+ * @param r, g, b: Neon glow color
+ * 
+ * Composition: Dark base structure with sinusoidal width variation,
+ * neon glow windows, top antenna, holographic panels
+ * Color scheme: Dark blues/purples with neon RGB accents
+ */
 void draw2070Building(float x, float height, float r, float g, float b)
 {
     glPushMatrix();
@@ -1076,7 +1248,7 @@ void draw2070Building(float x, float height, float r, float g, float b)
             glVertex2f(wx + 0.025f, wy + 0.045f);
             glVertex2f(wx, wy + 0.045f);
             glEnd();
-        }
+        } 
     }
 
     glEnable(GL_BLEND);
@@ -1091,6 +1263,13 @@ void draw2070Building(float x, float height, float r, float g, float b)
     glPopMatrix();
 }
 
+/**
+ * drawGlowingSpaceRoad: Renders futuristic illuminated road/highway
+ * 
+ * Composition: Glowing lanes with moving light patterns,
+ * semi-transparent quad strips forming road markings
+ * Animation: Lane lights pulse and scroll to simulate movement
+ */
 void drawGlowingSpaceRoad()
 {
     glColor3f(0.03f, 0.04f, 0.06f);
@@ -1159,6 +1338,17 @@ void drawGlowingSpaceRoad()
     glDisable(GL_BLEND);
 }
 
+/**
+ * drawSpaceHoverCar: Renders futuristic hover vehicle
+ * @param x, y: Position of vehicle
+ * @param r, g, b: Neon glow color
+ * @param facingRight: Direction flag for sprite orientation
+ * 
+ * Composition: Hover pods, cockpit, neon trim, holographic cabin,
+ * glowing underbody. Includes hovering animation (Y-axis bob)
+ * Transformation: Translation (position), Scaling with optional 
+ * mirroring (facingRight controls -1.0 scaling on X)
+ */
 void drawSpaceHoverCar(float x, float y, float r, float g, float b, bool facingRight)
 {
     glPushMatrix();
@@ -1191,6 +1381,14 @@ void drawSpaceHoverCar(float x, float y, float r, float g, float b, bool facingR
     glPopMatrix();
 }
 
+/**
+ * drawForegroundMetro: Renders futuristic metro train in foreground
+ * 
+ * Composition: Long train carriages with segmented windows,
+ * glowing railings, neon indicators, connected module system
+ * Creates sense of depth with layered rendering
+ * Uses metro2070X for horizontal animation
+ */
 void drawForegroundMetro()
 {
     glColor3f(0.14f, 0.14f, 0.17f);
@@ -1251,7 +1449,7 @@ void drawForegroundMetro()
             glVertex2f(wx + 0.05f, 0.03f);
             glVertex2f(wx + 0.05f, 0.08f);
             glVertex2f(wx, 0.08f);
-            glEnd();
+            glEnd(); 
         }
     }
 
@@ -1277,12 +1475,19 @@ void drawForegroundMetro()
     glPopMatrix();
 }
 
-// ==========================================
-// 🎬 CINEMATIC TRANSITION MODULES
-// ==========================================
+// TRANSITION MODULES
 
-// TRANSITION 3: "Holographic Sweep" (City -> Future)
-void drawSciFiHolographicSweep(float progress)
+// TRANSITION : "Holographic Sweep" (City -> Future)
+/**
+ * drawSciFiHolographicSweep: Renders futuristic scene transition effect
+ * @param progress: Animation progress (0.0 to 1.0)
+ * 
+ * Creates dramatic sci-fi holographic sweep transition
+ * Uses blue diagonal lines that scan across screen
+ * Glow effect grows as progress increases  
+ * Effect covers entire viewport with animated pattern
+ */
+void drawSciFiHolographicSweep(float progress) 
 {
     int w = glutGet(GLUT_WINDOW_WIDTH);
     int h = glutGet(GLUT_WINDOW_HEIGHT);
@@ -1373,9 +1578,13 @@ void drawSciFiHolographicSweep(float progress)
     glDisable(GL_BLEND);
 }
 
-// ==========================================
-// SCENE RENDERERS
-// ==========================================
+// Scenario
+
+/**
+ * drawVillage: Main rural village scene renderer
+ * Renders: Sky, mountains, sun, animated clouds, hills, windmill,
+ * ground, river, boat, farmhouse, forest, and animal flocks
+ */
 void drawVillage()
 {
     // === 1. SKY GRADIENT ===
@@ -1486,35 +1695,42 @@ void drawVillage()
     // === 14. FARMHOUSE ===
     glPushMatrix();
     glTranslatef(-0.6f, -0.4f, 0.0f);
+
     glColor3f(0.8f, 0.6f, 0.4f);
     glBegin(GL_QUADS);
     glVertex2f(-0.2f, 0.0f); glVertex2f(0.1f, 0.0f);
     glVertex2f( 0.1f, 0.3f); glVertex2f(-0.2f, 0.3f);
     glEnd();
+
     glColor3f(0.5f, 0.3f, 0.1f);
     glBegin(GL_QUADS);
     glVertex2f(0.1f, 0.0f); glVertex2f(0.35f, 0.10f);
     glVertex2f(0.35f, 0.4f); glVertex2f(0.1f, 0.3f);
     glEnd();
+
     glColor3f(0.8f, 0.2f, 0.2f);
     glBegin(GL_TRIANGLES);
     glVertex2f(-0.25f, 0.3f); glVertex2f(0.15f, 0.3f); glVertex2f(-0.05f, 0.5f);
     glEnd();
+
     glColor3f(0.6f, 0.1f, 0.1f);
     glBegin(GL_QUADS);
     glVertex2f(0.15f, 0.3f); glVertex2f(-0.05f, 0.5f);
     glVertex2f(0.2f,  0.6f); glVertex2f( 0.4f,  0.4f);
     glEnd();
+
     glColor3f(0.3f, 0.1f, 0.05f);
     glBegin(GL_QUADS);
     glVertex2f(-0.1f, 0.0f); glVertex2f(0.0f, 0.0f);
     glVertex2f( 0.0f, 0.15f); glVertex2f(-0.1f, 0.15f);
     glEnd();
+
     glColor3f(0.1f, 0.6f, 0.8f);
     glBegin(GL_QUADS);
     glVertex2f(0.15f, 0.15f); glVertex2f(0.25f, 0.19f);
     glVertex2f(0.25f, 0.29f); glVertex2f(0.15f, 0.25f);
     glEnd();
+
     glPointSize(3.0f);
     glBegin(GL_POINTS);
     for (float vy = 0.0f; vy < 0.28f; vy += 0.015f)
@@ -1570,8 +1786,16 @@ void drawVillage()
     drawBirdFlock(birdX2, 0.44f, 0.72f);  // second flock, lower & smaller
 }
 
+/**
+ * drawCity: Modern urban city scene renderer
+ * Renders: Sun (Midpoint Circle), animated skyline (DDA algorithm),
+ * street, 3D buildings, traffic lights, street lamps, and city vehicles
+ */
 void drawCity()
 {
+    // Draw sun using Midpoint Circle Algorithm (Bresenham)
+    drawCircleBresenham(0.7f, 0.75f, 0.12f, 1.0f, 0.9f, 0.2f);
+    
     drawSkyline();
 
     glColor3f(0.15f, 0.15f, 0.15f);
@@ -1613,6 +1837,14 @@ void drawCity()
     drawCityCar();
 }
 
+/**
+ * drawFuture: Futuristic sci-fi space city scene (year 2070)
+ * Renders: Dark space background with stars, neon sun (dual Bresenham circles),
+ * space buildings (2070-style), glowing road, hover cars, and metro train
+ * 
+ * Visual style: Cyberpunk/neon aesthetic with dark colors and glow effects
+ * Uses algorithms: Bresenham circles for neon sun effect
+ */
 void drawFuture()
 {
     glColor3f(0.01f, 0.01f, 0.06f);
@@ -1623,6 +1855,10 @@ void drawFuture()
     glVertex2f(-1.0f, 1.0f);
     glEnd();
 
+    // Draw glowing future sun using Bresenham circle (neon effect)
+    drawCircleBresenham(-0.8f, 0.8f, 0.1f, 0.0f, 0.8f, 1.0f);
+    drawCircleBresenham(-0.8f, 0.8f, 0.08f, 0.2f, 0.9f, 1.0f);
+    
     drawSpaceBackground();
 
     glColor3f(0.03f, 0.04f, 0.08f);
@@ -1653,8 +1889,24 @@ void drawFuture()
 // ==========================================
 // CORE RENDERING ENGINE
 // ==========================================
+
+/**
+ * display: Main OpenGL render callback function
+ * 
+ * Called every frame to render the active scene
+ * Workflow:
+ * 1. Clear screen with current background color
+ * 2. Load identity matrix for fresh transformations
+ * 3. Render appropriate scene based on currentState (VILLAGE, CITY, FUTURE)
+ * 4. Handle scene transitions with fade and holographic effects
+ * 5. Swap buffers for double-buffering (smooth animation)
+ */
 void display()
 {
+    static int frameCount = 0;
+    if (frameCount++ % 30 == 0)  // Print every 30 frames
+        std::cout << "Display: isPaused=" << isPaused << std::endl;
+    
     glClearColor(bgR, bgG, bgB, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
@@ -1693,175 +1945,206 @@ void display()
         glVertex2f(-1.0f, 1.0f);
         glEnd();
         glDisable(GL_BLEND);
-    }
+    } 
 
+    // Draw pause overlay if paused (BEFORE buffer swap so it displays)
+    if (isPaused)
+    {
+        displayPauseOverlay();
+    }
+    
     glutSwapBuffers();
 }
 
-// ==========================================
 // TIME & STATE MANAGER
-// ==========================================
+
+/**
+ * update: Timer callback for updating animation state
+ * @param value: Timer ID (not used)
+ * 
+ * Called at regular intervals (16ms ≈ 60 FPS) to update:
+ * - All animation variables (positions, angles, progress counters)
+ * - Scene transitions and state changes
+ * - Timers and effect durations
+ * - Vehicle and object movements
+ * 
+ * Then redraws scene and reschedules next update call
+ */
 void update(int value)
 {
-    timer += 0.1f;
-
-    if (currentState == FUTURE || currentState == TRANSITION_TO_FUTURE)
+    // Skip all animation updates when paused
+    if (!isPaused)
     {
-        metro2070X += 0.04f; // Slower metro movement
-        if (metro2070X > 3.0f)
-            metro2070X = -3.0f;
-        spaceCar1X -= 0.03f;
-        if (spaceCar1X < -1.5f)
-            spaceCar1X = 1.5f;
-        spaceCar2X += 0.04f;
-        if (spaceCar2X > 1.5f)
-            spaceCar2X = -1.5f;
-    }
+        if (currentState == FUTURE || currentState == TRANSITION_TO_FUTURE)
+        {
+            metro2070X += 0.04f; // Slower metro movement
+            if (metro2070X > 3.0f)
+                metro2070X = -3.0f;
+            spaceCar1X -= 0.03f;
+            if (spaceCar1X < -1.5f)
+                spaceCar1X = 1.5f;
+            spaceCar2X += 0.04f;
+            if (spaceCar2X > 1.5f)
+                spaceCar2X = -1.5f;
+        }
 
-    trafficTimer += 0.05f;
-    if (trafficTimer < 3.0f)
-        trafficState = 0;
-    else if (trafficTimer < 4.5f)
-        trafficState = 1;
-    else if (trafficTimer < 8.0f)
-        trafficState = 2;
-    else
-        trafficTimer = 0.0f;
-
-    if (trafficState == 0)
-        cityCarX += 0.015f;
-    else if (trafficState == 1)
-    {
-        if (cityCarX > -0.1f && cityCarX < 0.2f)
-            cityCarX += 0.005f;
+        trafficTimer += 0.05f;
+        if (trafficTimer < 3.0f)
+            trafficState = 0;
+        else if (trafficTimer < 4.5f)
+            trafficState = 1;
+        else if (trafficTimer < 8.0f)
+            trafficState = 2;
         else
+            trafficTimer = 0.0f;
+
+        if (trafficState == 0)
             cityCarX += 0.015f;
-    }
-    else if (trafficState == 2)
-    {
-        if (cityCarX > -0.1f && cityCarX < 0.2f)
+        else if (trafficState == 1)
         {
+            if (cityCarX > -0.1f && cityCarX < 0.2f)
+                cityCarX += 0.005f;
+            else
+                cityCarX += 0.015f;
         }
-        else
-            cityCarX += 0.015f;
-    }
-    if (cityCarX > 1.5f)
-        cityCarX = -1.5f;
-
-    skylineOffset -= 0.005f;
-    if (skylineOffset < -1.0f)
-        skylineOffset = 0.0f;
-    cloudX += 0.005f;
-    if (cloudX > 1.2f)
-        cloudX = -1.2f;
-    rippleOffset += 0.01f;
-    if (rippleOffset > 0.3f)
-        rippleOffset = 0.0f;
-    carX += 0.02f;
-    if (carX > 1.2f)
-        carX = -1.2f;
-    pulseTime += 0.2f;
-    windTime += 0.1f;
-    windStreakX += 0.05f;
-    if (windStreakX > 1.5f)
-        windStreakX = -1.5f;
-    birdX += 0.01f;
-    if (birdX > 1.2f)
-        birdX = -1.2f;
-    birdX2 += 0.008f;
-    if (birdX2 > 1.3f)
-        birdX2 = -1.3f;
-    cloudX2 += 0.003f;
-    if (cloudX2 > 1.5f)
-        cloudX2 = -1.5f;
-    cloudX3 += 0.006f;
-    if (cloudX3 > 1.5f)
-        cloudX3 = -1.5f;
-    windmillAngle -= 1.5f;
-    if (windmillAngle <= -360.0f)
-        windmillAngle += 360.0f;
-    boatX -= 0.005f;
-    if (boatX < -1.5f)
-        boatX = 1.5f;
-    smokeProgress += 0.02f;
-    if (smokeProgress >= 1.0f)
-        smokeProgress = 0.0f;
-
-    switch (currentState)
-    {
-    case VILLAGE:
-        bgR = 0.5f;
-        bgG = 0.8f;
-        bgB = 1.0f;
-        if (timer >= 5.0f)
+        else if (trafficState == 2)
         {
-            currentState = TRANSITION_TO_CITY;
-            timer = 0.0f;
+            if (cityCarX > -0.1f && cityCarX < 0.2f)
+            {
+            }
+            else
+                cityCarX += 0.015f;
         }
-        break;
+        if (cityCarX > 1.5f)
+            cityCarX = -1.5f;
 
-    case TRANSITION_TO_CITY:
-        transitionProgress += 0.02f;
-        bgR = lerp(0.5f, 0.2f, transitionProgress);
-        bgG = lerp(0.8f, 0.2f, transitionProgress);
-        bgB = lerp(1.0f, 0.4f, transitionProgress);
-        if (transitionProgress < 0.5f)
-            fadeAlpha = transitionProgress * 2.0f;
-        else
-            fadeAlpha = 1.0f - ((transitionProgress - 0.5f) * 2.0f);
-        if (transitionProgress >= 1.0f)
-        {
-            currentState = CITY;
-            transitionProgress = 0.0f;
-            fadeAlpha = 0.0f;
-            timer = 0.0f;
-        }
-        break;
+        skylineOffset -= 0.005f;
+        if (skylineOffset < -1.0f)
+            skylineOffset = 0.0f;
+        cloudX += 0.005f;
+        if (cloudX > 1.2f)
+            cloudX = -1.2f;
 
-    case CITY:
-        bgR = 0.2f;
-        bgG = 0.2f;
-        bgB = 0.4f; // Set strict city background color
-        if (timer >= 5.0f)
-        {
-            currentState = TRANSITION_TO_FUTURE;
-            timer = 0.0f;
-        }
-        break;
+        rippleOffset += 0.01f;
+        if (rippleOffset > 0.3f)
+            rippleOffset = 0.0f;
 
-    case TRANSITION_TO_FUTURE:
-        transitionProgress += 0.015f; // Slow, deliberate structural sweep
-        // Background is handled entirely inside the draw function via scissoring
-        if (transitionProgress >= 1.0f)
-        {
-            currentState = FUTURE;
-            transitionProgress = 0.0f;
-            timer = 0.0f;
-            bgR = 0.0f;
-            bgG = 0.0f;
-            bgB = 0.05f; // Snap to future color
-        }
-        break;
+        carX += 0.02f;
+        if (carX > 1.2f)
+            carX = -1.2f;
+        pulseTime += 0.2f;
 
-    case FUTURE:
-        bgR = 0.0f;
-        bgG = 0.0f;
-        bgB = 0.05f;
-        if (timer >= 8.0f)
+        windTime += 0.1f;
+        windStreakX += 0.05f;
+        if (windStreakX > 1.5f)
+            windStreakX = -1.5f;
+
+        birdX += 0.01f;
+        if (birdX > 1.2f)
+            birdX = -1.2f;
+        birdX2 += 0.008f;
+        if (birdX2 > 1.3f)
+            birdX2 = -1.3f;
+
+        cloudX2 += 0.003f;
+        if (cloudX2 > 1.5f)
+            cloudX2 = -1.5f;
+        cloudX3 += 0.006f;
+        if (cloudX3 > 1.5f)
+            cloudX3 = -1.5f;
+
+        windmillAngle -= 1.5f;
+        if (windmillAngle <= -360.0f)
+            windmillAngle += 360.0f;
+
+        boatX -= 0.005f;
+        if (boatX < -1.5f)
+            boatX = 1.5f;
+
+        smokeProgress += 0.02f;
+        if (smokeProgress >= 1.0f)
+            smokeProgress = 0.0f;
+
+        switch (currentState)
         {
-            currentState = VILLAGE;
-            timer = 0.0f;
-            transitionProgress = 0.0f;
+        case VILLAGE:
             bgR = 0.5f;
             bgG = 0.8f;
             bgB = 1.0f;
-        }
-        break;
-    }
+            if (timer >= 5.0f)
+            {
+                currentState = TRANSITION_TO_CITY;
+                timer = 0.0f;
+            }
+            break;
 
+        case TRANSITION_TO_CITY:
+            transitionProgress += 0.02f;
+            bgR = lerp(0.5f, 0.2f, transitionProgress);
+            bgG = lerp(0.8f, 0.2f, transitionProgress);
+            bgB = lerp(1.0f, 0.4f, transitionProgress);
+            
+            if (transitionProgress < 0.5f)
+                fadeAlpha = transitionProgress * 2.0f;
+            else
+                fadeAlpha = 1.0f - ((transitionProgress - 0.5f) * 2.0f);
+            if (transitionProgress >= 1.0f)
+            {
+                currentState = CITY;
+                transitionProgress = 0.0f;
+                fadeAlpha = 0.0f;
+                timer = 0.0f;
+            }
+            break;
+
+        case CITY:
+            bgR = 0.2f;
+            bgG = 0.2f;
+            bgB = 0.4f; // Set strict city background color
+            if (timer >= 5.0f)
+            {
+                currentState = TRANSITION_TO_FUTURE;
+                timer = 0.0f;
+            }
+            break;
+
+        case TRANSITION_TO_FUTURE:
+            transitionProgress += 0.015f; // Slow, deliberate structural sweep
+            if (transitionProgress >= 1.0f)
+            {
+                currentState = FUTURE;
+                transitionProgress = 0.0f;
+                timer = 0.0f;
+                bgR = 0.0f;
+                bgG = 0.0f;
+                bgB = 0.05f; // Snap to future color
+            }
+            break;
+
+        case FUTURE:
+            bgR = 0.0f;
+            bgG = 0.0f;
+            bgB = 0.05f;
+            if (timer >= 8.0f)
+            {
+                currentState = VILLAGE;
+                timer = 0.0f;
+                transitionProgress = 0.0f;
+                bgR = 0.5f;
+                bgG = 0.8f;
+                bgB = 1.0f;
+            }
+            break;
+        }
+        timer += 0.1f;
+    }
+    
+    // Always redisplay (even when paused, to show pause overlay)
     glutPostRedisplay();
     glutTimerFunc(80, update, 0);
 }
+
+
 
 void init()
 {
@@ -1882,6 +2165,7 @@ int main(int argc, char **argv)
     glutCreateWindow("Computer Graphics Project: The Evolution - Cinematic Transitions");
     init();
     glutDisplayFunc(display);
+    glutKeyboardFunc(keyboardCallback);  // Register keyboard callback for pause
     glutTimerFunc(30, update, 0);
     glutMainLoop();
     return 0;
